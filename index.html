@@ -1681,38 +1681,171 @@
         return safeText;
     }
 
-    // --- Template Generation Action ---
+    // --- Dynamic Reusable Styles Array ---
+    const excelStyles = {
+        fillWhite: { patternType: "solid", fgColor: { rgb: "FFFFFF" } },
+        borderBottom: { bottom: { style: "thin", color: { rgb: "000000" } } },
+        borderTopBottomThick: { 
+            top: { style: "thick", color: { rgb: "000000" } },
+            bottom: { style: "thick", color: { rgb: "000000" } }
+        }
+    };
+    excelStyles.styleLabel = { alignment: { horizontal: "right" }, font: { bold: true }, fill: excelStyles.fillWhite };
+    excelStyles.styleUnderline = { fill: excelStyles.fillWhite, border: excelStyles.borderBottom };
+    excelStyles.styleWhite = { fill: excelStyles.fillWhite };
+    excelStyles.styleHeader = { font: { bold: true }, border: excelStyles.borderTopBottomThick };
+
+    function constructExcelSheetDataMatrix(isTemplateMode = false) {
+        const pName = document.getElementById('metaPrideName').value || '';
+        const rTitle = document.getElementById('metaRoleTitle').value || '';
+        const sDate = document.getElementById('metaStartDate').value || '';
+        const wave = document.getElementById('paramB4').value || '';
+        const tzCorner = document.getElementById('paramB5').value || '';
+        const tzHire = document.getElementById('paramB6').value || '';
+        const region = document.getElementById('paramB7').value || '';
+        const prod = document.getElementById('metaProduct').value || '';
+        const owner = document.getElementById('metaLPOwner').value || '';
+
+        const rawTopValues = [
+            ["Pride Member Name:", pName], 
+            ["Role Title:", rTitle], 
+            ["Start Date:", sDate], 
+            ["Orientation:", wave],
+            ["Time zone in Cornerstone:", tzCorner], 
+            ["Time zone of new hire's location:", tzHire],
+            ["Region:", region], 
+            ["Product:", prod], 
+            ["Learning Plan Owner:", owner]
+        ];
+
+        const sheetDataMatrix = [];
+
+        // Build Top Meta Section (Rows 1 to 12 / A1 to M12)
+        for (let r = 0; r < 12; r++) {
+            let rowArr = [];
+            for (let c = 0; c < 13; c++) {
+                let cellVal = "";
+                let cellStyle = excelStyles.styleWhite; 
+
+                if (r < 9) { 
+                    if (c === 0) {
+                        cellVal = rawTopValues[r][0];
+                        cellStyle = excelStyles.styleLabel;
+                    } else if (c === 1) {
+                        // If it's a template, leave the field blank for the user to fill in
+                        cellVal = isTemplateMode ? "" : rawTopValues[r][1];
+                        cellStyle = excelStyles.styleUnderline;
+                    } else if (c === 2) {
+                        cellVal = "";
+                        cellStyle = excelStyles.styleUnderline;
+                    }
+                }
+                rowArr.push({ v: cellVal, s: cellStyle });
+            }
+            sheetDataMatrix.push(rowArr);
+        }
+
+        // Build Table Headers (Row 13 / A13 to M13)
+        const headers = ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"];
+        sheetDataMatrix.push(headers.map(h => ({ v: h, s: excelStyles.styleHeader })));
+
+        // Append Matrix Data Rows
+        workspaceDataset.forEach(row => {
+            let textTypeIdentifier = row.type || 'Unassigned';
+            
+            const typeHtmlStyle = getStyleRulesForCourseType(row.type);
+            const excelBgHex = typeHtmlStyle.bg.replace('#', '');
+            const excelTextHex = typeHtmlStyle.text.replace('#', '');
+            
+            const typeCellStyle = {
+                fill: { patternType: "solid", fgColor: { rgb: excelBgHex } },
+                font: { color: { rgb: excelTextHex } } 
+            };
+
+            const styledTypeCell = { v: textTypeIdentifier, s: typeCellStyle };
+
+            sheetDataMatrix.push([
+                row.title || '', 
+                styledTypeCell, 
+                row.instructor || '', 
+                row.liveSessionDate || '',
+                row.startTime || '', 
+                row.duration || '', 
+                row.dueDate || '', 
+                row.eventStatus || '',
+                row.locatorNumber || '', 
+                row.sessionTimezone || '', 
+                isTemplateMode ? "" : tzHire, 
+                processTextForExcel(row.additionalNotes), 
+                processTextForExcel(row.lpOwnerNotes)
+            ]);
+        });
+
+        // Calculate Dynamic Column Widths
+        const colWidths = new Array(13).fill(10);
+        sheetDataMatrix.forEach(row => {
+            for (let i = 0; i < 13; i++) {
+                const cell = row[i];
+                let cellText = "";
+                
+                if (cell !== null && cell !== undefined) {
+                    if (typeof cell === 'object') {
+                        cellText = cell.v ? cell.v.toString() : "";
+                    } else {
+                        cellText = cell.toString();
+                    }
+                }
+                
+                const lines = cellText.split('\n');
+                let maxLineLength = 0;
+                lines.forEach(line => {
+                    if (line.length > maxLineLength) maxLineLength = line.length;
+                });
+
+                if (maxLineLength + 2 > colWidths[i]) {
+                    colWidths[i] = maxLineLength + 2; 
+                }
+            }
+        });
+
+        const finalCols = colWidths.map(w => ({ wch: Math.min(w, 65) }));
+        
+        return { matrix: sheetDataMatrix, cols: finalCols };
+    }
+
+    // --- Binary File Export Functions ---
+    function generateAndDownloadBinaryXLSX() {
+        const pName = document.getElementById('metaPrideName').value || '';
+        const rTitle = document.getElementById('metaRoleTitle').value || '';
+        const region = document.getElementById('paramB7').value || '';
+        const prod = document.getElementById('metaProduct').value || '';
+
+        const dataPack = constructExcelSheetDataMatrix(false);
+        const worksheet = XLSX.utils.aoa_to_sheet(dataPack.matrix);
+        worksheet['!cols'] = dataPack.cols;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Learning Plan");
+
+        const finalFilenameOutput = `${(region||'Reg').replace(/[^a-zA-Z0-9]+/g, '_')}${(prod||'Prod').replace(/[^a-zA-Z0-9]/g, '_')}_${(rTitle||'Role').replace(/[^a-zA-Z0-9]/g, '_')}_${(pName||'Name').replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+        XLSX.writeFile(workbook, finalFilenameOutput);
+    }
+
     function generateAndDownloadTemplateXLSX() {
         let filename = prompt("Enter a filename for your template:", "My_Custom_Template");
-        if (filename === null) return; // Cancelled
+        if (filename === null) return; 
         if (filename.trim() === "") filename = "Template";
 
         if (!filename.toLowerCase().endsWith('.xlsx')) {
             filename += '.xlsx';
         }
 
-        const sheetDataMatrix = [
-            ["Pride Member Name:", ""], ["Role Title:", ""], ["Start Date:", ""], ["Orientation:", ""],
-            ["Time zone in Cornerstone:", ""], ["Time zone of new hire's location:", ""],
-            ["Region:", ""], ["Product:", ""], ["Learning Plan Owner:", ""], [], [], [],
-            ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"]
-        ];
+        const dataPack = constructExcelSheetDataMatrix(true);
+        const worksheet = XLSX.utils.aoa_to_sheet(dataPack.matrix);
+        worksheet['!cols'] = dataPack.cols;
 
-        workspaceDataset.forEach(row => {
-            let textTypeIdentifier = row.type || 'Unassigned';
-            sheetDataMatrix.push([
-                row.title || '', textTypeIdentifier, row.instructor || '', row.liveSessionDate || '',
-                row.startTime || '', row.duration || '', row.dueDate || '', row.eventStatus || '',
-                row.locatorNumber || '', row.sessionTimezone || '', "", 
-                processTextForExcel(row.additionalNotes), 
-                processTextForExcel(row.lpOwnerNotes)
-            ]);
-        });
-
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetDataMatrix);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
-        worksheet['!cols'] = [{ wch: 32 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 24 }, { wch: 24 }, { wch: 32 }, { wch: 32 }];
 
         XLSX.writeFile(workbook, filename);
     }
@@ -2061,157 +2194,185 @@
     
     function escapeHtml(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-    function generateAndDownloadBinaryXLSX() {
-        const pName = document.getElementById('metaPrideName').value || '';
-        const rTitle = document.getElementById('metaRoleTitle').value || '';
-        const sDate = document.getElementById('metaStartDate').value || '';
-        const wave = document.getElementById('paramB4').value || '';
-        const tzCorner = document.getElementById('paramB5').value || '';
-        const tzHire = document.getElementById('paramB6').value || '';
-        const region = document.getElementById('paramB7').value || '';
-        const prod = document.getElementById('metaProduct').value || '';
-        const owner = document.getElementById('metaLPOwner').value || '';
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-        // 1. Define Reusable Styles
-        const fillWhite = { patternType: "solid", fgColor: { rgb: "FFFFFF" } };
-        const borderBottom = { bottom: { style: "thin", color: { rgb: "000000" } } };
-        
-        // Define a combined border for the header with thick lines on both top and bottom
-        const borderTopBottomThick = { 
-            top: { style: "thick", color: { rgb: "000000" } },
-            bottom: { style: "thick", color: { rgb: "000000" } }
-        };
-
-        const styleLabel = { alignment: { horizontal: "right" }, font: { bold: true }, fill: fillWhite };
-        const styleUnderline = { fill: fillWhite, border: borderBottom };
-        const styleWhite = { fill: fillWhite };
-        
-        // Apply the new thick top & bottom border to the headers
-        const styleHeader = { font: { bold: true }, border: borderTopBottomThick };
-
-        const rawTopValues = [
-            ["Pride Member Name:", pName], 
-            ["Role Title:", rTitle], 
-            ["Start Date:", sDate], 
-            ["Orientation:", wave],
-            ["Time zone in Cornerstone:", tzCorner], 
-            ["Time zone of new hire's location:", tzHire],
-            ["Region:", region], 
-            ["Product:", prod], 
-            ["Learning Plan Owner:", owner]
-        ];
-
-        const sheetDataMatrix = [];
-
-        // 2. Build Top Meta Section (Rows 1 to 12 / A1 to M12)
-        for (let r = 0; r < 12; r++) {
-            let rowArr = [];
-            // Generate 13 columns (A through M)
-            for (let c = 0; c < 13; c++) {
-                let cellVal = "";
-                let cellStyle = styleWhite; // Default everything to white background
-
-                if (r < 9) { // Targeting Rows 1 to 9
-                    if (c === 0) {
-                        // Column A
-                        cellVal = rawTopValues[r][0];
-                        cellStyle = styleLabel;
-                    } else if (c === 1) {
-                        // Column B
-                        cellVal = rawTopValues[r][1];
-                        cellStyle = styleUnderline;
-                    } else if (c === 2) {
-                        // Column C
-                        cellVal = "";
-                        cellStyle = styleUnderline;
-                    }
-                }
-                // Push styled cell into the row
-                rowArr.push({ v: cellVal, s: cellStyle });
-            }
-            sheetDataMatrix.push(rowArr);
-        }
-
-        // 3. Build Table Headers (Row 13 / A13 to M13)
-        const headers = ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"];
-        sheetDataMatrix.push(headers.map(h => ({ v: h, s: styleHeader })));
-
-        // 4. Append Matrix Data Rows (Rows 14+)
-        workspaceDataset.forEach(row => {
-            let textTypeIdentifier = row.type || 'Unassigned';
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
             
-            // Extract the exact hex values from your HTML styling
-            const typeHtmlStyle = getStyleRulesForCourseType(row.type);
-            const excelBgHex = typeHtmlStyle.bg.replace('#', '');
-            const excelTextHex = typeHtmlStyle.text.replace('#', '');
-            
-            // Apply formatting specifically to the "Type" cell (No bolding applied here)
-            const typeCellStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: excelBgHex } },
-                font: { color: { rgb: excelTextHex } } 
-            };
+            // raw: false ensures dates are pulled as formatted strings, circumventing serial integer translation
+            const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false}); 
 
-            const styledTypeCell = { v: textTypeIdentifier, s: typeCellStyle };
+            // Map data extraction explicitly starting from row 14 (index 13) 
+            const startIndex = 13;
 
-            // Submitting parsed cell objects to handle underlying target URLs and formatted styles
-            sheetDataMatrix.push([
-                row.title || '', 
-                styledTypeCell, 
-                row.instructor || '', 
-                row.liveSessionDate || '',
-                row.startTime || '', 
-                row.duration || '', 
-                row.dueDate || '', 
-                row.eventStatus || '',
-                row.locatorNumber || '', 
-                row.sessionTimezone || '', 
-                tzHire, 
-                processTextForExcel(row.additionalNotes), 
-                processTextForExcel(row.lpOwnerNotes)
-            ]);
-        });
-
-        // 5. Calculate Dynamic Column Widths
-        const colWidths = new Array(13).fill(10); // Start with minimum width of 10
-        sheetDataMatrix.forEach(row => {
-            for (let i = 0; i < 13; i++) {
-                const cell = row[i];
-                let cellText = "";
+            for (let i = startIndex; i < json.length; i++) {
+                const row = json[i];
+                if (!row || row.length === 0) continue;
                 
-                // Extract string value regardless of whether it's a raw string or an object {v: "value"}
-                if (cell !== null && cell !== undefined) {
-                    if (typeof cell === 'object') {
-                        cellText = cell.v ? cell.v.toString() : "";
-                    } else {
-                        cellText = cell.toString();
-                    }
+                // Exclude arrays evaluated entirely as blank bounds
+                const isEmpty = row.every(cell => !cell || cell.toString().trim() === '');
+                if (isEmpty) continue;
+
+                const rawType = row[1] || '';
+                const type = verifyPastedType(rawType);
+                const isLive = type === "Live Session";
+                const canHaveTime = type === "Live Session" || type === "External Learning (no CSOD assignment)";
+                
+                // Auto-populate Logic
+                let instructor = row[2] || '';
+                if (type === "eLearning" || type === "Video") {
+                    instructor = "Self-led";
                 }
-                
-                // Account for multiline text by taking the length of the longest line
-                const lines = cellText.split('\n');
-                let maxLineLength = 0;
-                lines.forEach(line => {
-                    if (line.length > maxLineLength) maxLineLength = line.length;
+
+                workspaceDataset.push({
+                    id: generateId(),
+                    title: row[0] || '',
+                    type: type,
+                    instructor: instructor,
+                    liveSessionDate: canHaveTime ? formatIncomingDateString(row[3]) : '', 
+                    startTime: normalizeIncomingTimeString(row[4]),
+                    duration: row[5] || '',
+                    dueDate: isLive ? '' : formatIncomingDateString(row[6]),
+                    eventStatus: '',
+                    locatorNumber: '',
+                    additionalNotes: '',
+                    sessionTimezone: '',
+                    targetDateTime: '',
+                    lpOwnerNotes: ''
                 });
-
-                if (maxLineLength + 2 > colWidths[i]) {
-                    colWidths[i] = maxLineLength + 2; // +2 for padding breathing room
-                }
             }
-        });
+            
+            e.target.value = ''; // Reset input to permit repeated imports of identical file payload
+            runGlobalRecalculationEngine();
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
-        // Cap widths to max 65 characters so long notes don't break Excel usability
-        const finalCols = colWidths.map(w => ({ wch: Math.min(w, 65) }));
+    function generateAndTriggerPrintJob() {
+        const prideName = document.getElementById('metaPrideName').value || '_______________________';
+        const roleTitle = document.getElementById('metaRoleTitle').value || '_______________________';
+        const startDateRaw = document.getElementById('metaStartDate').value;
+        const productVal = document.getElementById('metaProduct').value || '_______________________';
+        const lpOwner = document.getElementById('metaLPOwner').value || '_______________________';
+        const region = document.getElementById('paramB7').value || '';
+        const startDateFormatted = startDateRaw ? new Date(startDateRaw).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '_______________________';
 
-        // 6. Generate File
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetDataMatrix);
-        worksheet['!cols'] = finalCols; // Apply calculated widths
+        // 1. Construct the exact same filename string used in the XLSX export
+        const safeRegion = (region || 'Reg').replace(/[^a-zA-Z0-9]+/g, '_');
+        const safeProduct = (productVal !== '_______________________' ? productVal : 'Prod').replace(/[^a-zA-Z0-9]/g, '_');
+        const safeRole = (roleTitle !== '_______________________' ? roleTitle : 'Role').replace(/[^a-zA-Z0-9]/g, '_');
+        const safeName = (prideName !== '_______________________' ? prideName : 'Name').replace(/[^a-zA-Z0-9]/g, '_');
+        
+        const dynamicFilename = `${safeRegion}_${safeProduct}_${safeRole}_${safeName}`;
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Learning Plan");
+        let printHTML = `
+            <div class="page-break-wrapper">
+                <div class="print-cover-page">
+                    <div class="cover-title-brand">Cornerstone Learning Plan</div>
+                    <div class="cover-main-header">Your Learning Plan</div>
+                    <div class="cover-metadata-card">
+                        <div class="cover-meta-row"><div class="cover-meta-label">Name:</div><div class="cover-meta-value">${escapeHtml(prideName)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Role Title:</div><div class="cover-meta-value">${escapeHtml(roleTitle)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Start Date:</div><div class="cover-meta-value">${escapeHtml(startDateFormatted)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Product:</div><div class="cover-meta-value">${escapeHtml(productVal)}</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-break-wrapper">
+                <div class="print-info-page">
+                    <div class="info-main-title">Learning Guidelines & Instructions</div>
+                    <div class="info-grid-layout">
+                        <div style="display:flex; flex-direction:column; gap:20px;">
+                            <div class="info-card">
+                                <h3>🎓 Cornerstone - Your Home of Learning at MRI</h3>
+                                <p>Unless it says otherwise in your schedule, you'll find all your self-led learning on your Cornerstone Transcript. While you're there - why not have a little explore? Cornerstone is packed with thousands of courses, so it's a great place to discover extra learning that can support you in your new role at MRI.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>📆 Live Sessions</h3>
+                                <p>To make the most of your onboarding journey, it's important to attend these sessions as scheduled. They're a great opportunity to connect, ask questions, and stay on track - so try not to miss them! If you have a conflict with another meeting or training, please reach out to your learning plan contact to determine what you should attend. Note that the sessions on your schedule are displayed in your local time zone.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>🎯 Self Led Learning</h3>
+                                <p>Keep an eye on the due dates for your self-led learning, which you will find on the schedule. Some live sessions have prep or learning to complete beforehand, so it's super important to stick to the due dates in your learning plan. To stay on track, we recommend adding these dates in your calendar.</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:20px;">
+                            <div class="info-card">
+                                <h3>📌 Compliance and Mandatory Training</h3>
+                                <p>There is some mandatory training you will need to complete which is not listed in your schedule. You can find the due date on your Cornerstone Transcript, so please take a moment to check it and make sure it's completed on time.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>❓ Questions</h3>
+                                <p>Feel free to reach out to your learning plan contact - they're here to help and support you along the way!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-contact-footer">Your learning plan contact is: <span>${escapeHtml(lpOwner)}</span></div>
+                </div>
+            </div>
+            
+            <div class="print-data-container">
+                <div class="print-data-header">
+                    <span>Learning Plan Schedule Timeline Agenda</span>
+                    <span style="font-size:12px; font-weight:400;">Candidate: ${escapeHtml(prideName)}</span>
+                </div>
+                <table class="print-table">
+                    <thead><tr>
+                        <th class="pcol-title">Training Title</th><th class="pcol-inst">Instructor</th><th class="pcol-target">Live Session Date & Time</th>
+                        <th class="pcol-dur">Duration</th><th class="pcol-notes">Additional Notes</th><th class="pcol-due">Due Date</th>
+                    </tr></thead><tbody>
+        `;
 
-        const finalFilenameOutput = `${(region||'Reg').replace(/[^a-zA-Z0-9]+/g, '_')}${(prod||'Prod').replace(/[^a-zA-Z0-9]/g, '_')}_${(rTitle||'Role').replace(/[^a-zA-Z0-9]/g, '_')}_${(pName||'Name').replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-        XLSX.writeFile(workbook, finalFilenameOutput);
+        if (workspaceDataset.length === 0) {
+            printHTML += `<tr><td colspan="6" style="text-align:center; font-style:italic;">No active entries mapped to this timeline matrix.</td></tr>`;
+        } else {
+            workspaceDataset.forEach(row => {
+                let formattedDue = '---';
+                if (row.dueDate) { 
+                    const parts = row.dueDate.split('-');
+                    if (parts.length === 3) formattedDue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                const instructorNormalize = (row.instructor || '').trim().toLowerCase();
+                
+                const isLiveOrExternal = row.type === "Live Session" || row.type === "External Learning (no CSOD assignment)";
+                const scheduleDisplay = (isLiveOrExternal && instructorNormalize !== "self-led" && instructorNormalize !== "self led") ? (row.targetDateTime || '⚠️ Missing Details') : '';
+
+                printHTML += `
+                    <tr>
+                        <td><strong>${escapeHtml(row.title || 'Untitled Module')}</strong><br><span style="font-size:9px; color:#555;">Type: ${escapeHtml(row.type || 'Unassigned')}</span></td>
+                        <td>${escapeHtml(row.instructor || '---')}</td>
+                        <td>${escapeHtml(scheduleDisplay)}</td>
+                        <td style="text-align:center;">${escapeHtml(row.duration || '---')}</td>
+                        <td>${parseRichText(row.additionalNotes || '---')}</td>
+                        <td>${escapeHtml(formattedDue)}</td>
+                    </tr>`;
+            });
+        }
+        printHTML += `</tbody></table></div>`;
+
+        const container = document.getElementById('printTemplateContainer');
+        container.innerHTML = printHTML;
+
+        // Temporarily hijack the document title to force the browser's PDF filename
+        const originalTitle = document.title;
+        document.title = dynamicFilename;
+
+        // Wrap the print command in a timeout. This fixes the browser render race condition
+        // ensuring the DOM updates visually before the print spooler takes a snapshot.
+        setTimeout(() => {
+            window.print();
+            
+            // Clean up the DOM and restore original title after print dialog closes
+            document.title = originalTitle;
+            container.innerHTML = '';
+        }, 150);
     }
 </script>
 </body>
