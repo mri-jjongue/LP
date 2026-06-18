@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Plan Workspace</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --panel-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --success-hover: #15803d;
+            --excel-color: #007ac6;
+            --excel-hover: #004b7a;
+            --danger-color: #ef4444;
+            --row-striped: #f8fafc;
+            
+            /* Conditional Formatting Palette */
+            --valid-green-bg: #f0fdf4;
+            --valid-green-text: #166534;
+            --valid-green-border: #bbf7d0;
+            --error-red-required: #ffcccc;
+            --error-red-text: #991b1b;
+            --warning-amber-bg: #fffbeb;
+            --warning-amber-text: #92400e;
+            --warning-amber-border: #fde68a;
+            --disabled-gray-bg: #f1f5f9;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* --- Workspace Layout --- */
+        .container { max-width: 100%; margin: 0 auto; padding: 0 12px; }
+        header { margin-bottom: 24px; }
+        header h1 { font-size: 24px; margin: 0 0 8px 0; }
+        header p { color: var(--text-secondary); margin: 0; }
+
+        /* --- Workspace Tabs --- */
+        .workspace-tabs-container { display: flex; align-items: flex-end; border-bottom: 2px solid var(--border-color); margin-bottom: 24px; gap: 4px; overflow-x: auto; padding-top: 8px;}
+        .workspace-tabs-container::-webkit-scrollbar { height: 6px; }
+        .workspace-tabs-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .workspace-tab { padding: 10px 20px; background: #f1f5f9; border: 1px solid var(--border-color); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-secondary); transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; white-space: nowrap; max-width: 250px; }
+        .workspace-tab span.tab-title-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .workspace-tab:hover:not(.active) { background: #e2e8f0; color: var(--text-primary); }
+        .workspace-tab.active { background: var(--panel-bg); color: var(--accent-color); border-top: 3px solid var(--accent-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); margin-bottom: -2px; padding-bottom: 12px; }
+        
+        .tab-close-btn { background: none; border: none; font-size: 16px; color: #94a3b8; cursor: pointer; padding: 0 4px; line-height: 1; border-radius: 4px; transition: all 0.15s ease; opacity: 0; }
+        .workspace-tab:hover .tab-close-btn, .workspace-tab.active .tab-close-btn { opacity: 1; }
+        .tab-close-btn:hover { color: var(--danger-color); background: #fee2e2; }
+
+        .workspace-tab-add { padding: 10px 16px; background: transparent; border: 1px dashed #cbd5e1; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 16px; font-weight: 700; color: var(--text-secondary); transition: all 0.2s ease; margin-bottom: -2px; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+        .workspace-tab-add:hover { background: #f1f5f9; color: var(--accent-color); border-color: var(--accent-color); }
+
+        .config-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
+            background: var(--panel-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);
+            margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .middle-section-container { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; align-items: stretch; }
+        .middle-section-block { display: flex; flex-direction: column; width: max-content; min-width: 320px; flex: 1 1 320px; max-width: 400px; }
+
+        .template-panel-flex, .actions-grid, .summary-panel {
+            background: var(--panel-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 100%;
+        }
+
+        .template-panel-flex { display: flex; flex-direction: column; gap: 16px; }
+        .actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: min-content; gap: 12px; align-content: start; }
+        .template-controls { display: flex; flex-direction: column; gap: 12px; }
+
+        /* --- Summary Block Styles --- */
+        .summary-panel { display: flex; flex-direction: column; gap: 8px; font-size: 13px; padding: 16px 20px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 2px; }
+        .summary-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .summary-val { font-weight: 700; color: var(--accent-color); font-size: 14px; }
+        .summary-val.total-time { color: var(--success-color); }
+
+        .refresh-btn {
+            background: none; border: none; cursor: pointer; padding: 4px; border-radius: 4px; 
+            display: flex; align-items: center; justify-content: center; font-size: 14px;
+            transition: background 0.15s ease, transform 0.3s ease; color: var(--text-secondary);
+        }
+        .refresh-btn:hover {
+            background: #f1f5f9; transform: rotate(180deg); color: var(--accent-color);
+        }
+
+        /* --- Floating Calendar Widget Styles --- */
+        .floating-calendar {
+            position: fixed; bottom: 24px; right: 24px; width: 320px; background: var(--panel-bg);
+            border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1000; display: none; flex-direction: column; overflow: hidden; font-family: inherit;
+        }
+
+        .calendar-drag-handle { display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 10px 16px; border-bottom: 1px solid var(--border-color); cursor: grab; user-select: none; }
+        .calendar-drag-handle:active { cursor: grabbing; }
+        .calendar-title { font-weight: 700; font-size: 13px; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+        .calendar-window-controls { display: flex; gap: 6px; }
+        .calendar-window-controls button { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 14px; padding: 2px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .calendar-window-controls button:hover { background: #e2e8f0; color: var(--text-primary); }
+
+        .calendar-hint { background-color: var(--accent-color); color: #fff; font-size: 11px; padding: 4px 8px; text-align: center; font-weight: 600; transition: opacity 0.5s ease; opacity: 0; display: none; }
+        .calendar-body { padding: 16px; }
+        .floating-calendar.minimized .calendar-body { display: none; }
+
+        .calendar-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-nav-header button { background: none; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; padding: 4px 8px; color: var(--text-secondary); font-size: 14px; transition: all 0.2s ease; }
+        .calendar-nav-header button:hover { background: #f1f5f9; color: var(--text-primary); }
+        .calendar-month-year { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        .calendar-day-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding-bottom: 8px; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text-primary); border-radius: 4px; cursor: pointer; transition: background-color 0.15s ease; position: relative; }
+        .calendar-day:hover:not(.empty) { background-color: #f1f5f9; }
+        .calendar-day.empty { cursor: default; }
+        .calendar-day.today { background-color: var(--accent-color); color: white; font-weight: 600; }
+        .calendar-day.today:hover { background-color: var(--accent-hover); }
+
+        .calendar-day.has-session { background-color: #e0f2fe; color: #0369a1; font-weight: 700; box-shadow: inset 0 0 0 1px #bae6fd; }
+        .calendar-day.has-session:hover { background-color: #bae6fd; }
+        .calendar-day.today.has-session { background-color: var(--accent-color); color: #ffffff; box-shadow: inset 0 0 0 2px #bae6fd; }
+
+        .calendar-day.start-date { background-color: #dcfce7; color: #166534; font-weight: 700; box-shadow: inset 0 0 0 1px #86efac; }
+        .calendar-day.start-date:hover { background-color: #bbf7d0; }
+        .calendar-day.start-date.has-session { background-color: #bbf7d0; box-shadow: inset 0 0 0 2px #7dd3fc; }
+        .calendar-day.start-date.today { background-color: var(--accent-color); color: #ffffff; box-shadow: inset 0 0 0 2px #86efac; }
+
+        /* --- Singleton Tooltip --- */
+        .calendar-tooltip {
+            position: absolute; background-color: #1e293b; color: #ffffff; padding: 10px 14px; border-radius: 6px;
+            font-size: 12px; line-height: 1.5; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); pointer-events: none;
+            z-index: 9999; display: none; white-space: pre-line; min-width: 150px; max-width: 280px; transform: translateX(-50%);
+        }
+        .calendar-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #1e293b transparent transparent transparent; }
+
+        /* --- Custom Modal Confirm Overlay --- */
+        .custom-confirm-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.65); /* Dark dimming background only, no blur */
+            z-index: 99999;
+            display: none; /* Hidden by default */
+            align-items: center; justify-content: center;
+        }
+        .custom-confirm-dialog {
+            background: #ffffff;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: modalPopIn 0.2s ease-out forwards;
+        }
+        @keyframes modalPopIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .custom-confirm-message {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 28px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+        .custom-confirm-actions {
+            display: flex; gap: 12px; justify-content: center;
+        }
+        .custom-confirm-actions .btn { min-width: 120px; font-size: 14px; padding: 10px 16px; }
+        .custom-confirm-actions .btn-cancel { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .custom-confirm-actions .btn-cancel:hover { background: #e2e8f0; color: #0f172a; }
+
+        /* --- Form & Table UI --- */
+        .section-panel-label { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-primary); letter-spacing: 0.5px; margin: 24px 0 12px 0; display: flex; align-items: center; gap: 6px; }
+        .middle-section-container .section-panel-label { margin-top: 8px; }
+
+        .config-field { display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .config-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
+
+        select, input[type="text"], input[type="date"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); background-color: #fff; outline: none; transition: all 0.15s ease; font-family: inherit; width: 100%; }
+        select:focus, input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        select:disabled, button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .paste-notice { background-color: #eff6ff; border: 1px dashed var(--accent-color); padding: 10px 16px; border-radius: 6px; font-size: 13px; color: #1e40af; margin-bottom: 16px; }
+
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; white-space: nowrap; transition: background 0.15s ease; width: 100%; }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-success:hover:not(:disabled) { background: var(--success-hover); }
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn-excel { background: var(--excel-color); color: white; }
+        .btn-excel:hover:not(:disabled) { background: var(--excel-hover); }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-danger:hover:not(:disabled) { background: #dc2626; }
+
+        .bulk-action-bar { display: none; background: var(--accent-color); color: white; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .bulk-action-bar.active { display: flex; }
+        .bulk-action-text { font-weight: 600; font-size: 14px; }
+        .bulk-action-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.15s ease; }
+        .bulk-action-btn:hover { background: rgba(255,255,255,0.3); }
+        .bulk-action-btn.danger { background: var(--danger-color); }
+        .bulk-action-btn.danger:hover { background: #dc2626; }
+
+        /* --- Scroll Synchronization Components --- */
+        .top-scrollbar-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .top-scrollbar-container::-webkit-scrollbar { height: 12px; }
+        .top-scrollbar-container::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px 8px 0 0; }
+        .top-scrollbar-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; border: 2px solid #f8fafc; }
+        .top-scrollbar-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .matrix-viewport { 
+            background: var(--panel-bg); 
+            border-radius: 0 0 8px 8px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            position: relative; 
+            width: 100%; 
+            overflow-x: auto;
+            overflow-y: auto; 
+            max-height: 70vh; 
+            padding-bottom: 12px;
+        }
+        
+        .matrix-viewport::-webkit-scrollbar { height: 12px; width: 12px; }
+        .matrix-viewport::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 0 0 8px 8px; }
+        .matrix-viewport::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; border: 2px solid #f1f5f9; }
+        .matrix-viewport::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        table.matrix-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; table-layout: fixed; min-width: 1820px; }
+        table.matrix-table th, table.matrix-table td { padding: 6px 12px; border-bottom: 1px solid var(--border-color); vertical-align: middle; position: relative; }
+        
+        table.matrix-table th { 
+            background-color: #f8fafc; 
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            border-bottom: 2px solid var(--border-color); 
+            position: sticky; 
+            top: 0; 
+            z-index: 30; 
+            padding: 10px 12px; 
+            cursor: pointer; 
+            user-select: none; 
+            transition: background-color 0.1s ease, color 0.1s ease; 
+        }
+        table.matrix-table th:hover { background-color: #f1f5f9; color: var(--text-primary); }
+        
+        .th-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: normal;
+            text-align: center;
+        }
+        
+        .sort-indicator { 
+            font-size: 10px; 
+            color: var(--accent-color); 
+            flex-shrink: 0; 
+        }
+
+        tr:nth-child(even) { background-color: var(--row-striped); }
+
+        .col-select     { width: 40px; text-align: center; }
+        .col-drag       { width: 90px; text-align: left; cursor: grab; padding-left: 8px; }
+        .col-title      { width: 220px; }
+        .col-type       { width: 150px; }
+        .col-instructor { width: 130px; }
+        .col-date       { width: 145px; } 
+        .col-time       { width: 110px; }
+        .col-duration   { width: 75px; }
+        .col-due        { width: 135px; }
+        .col-status     { width: 180px; }
+        .col-locator    { width: 110px; }
+        .col-notes      { width: 220px; }
+        .col-tz         { width: 200px; }
+        .col-target     { width: 180px; }
+        .col-lp-notes   { width: 220px; }
+
+        tr.matrix-row { position: relative; transition: background-color 0.15s ease; }
+        tr.matrix-row.drag-over { border-top: 2px solid var(--accent-color); }
+        tr.matrix-row.dragging { opacity: 0.4; background-color: #eff6ff; }
+        tr.matrix-row.row-selected { background-color: #f0fdf4 !important; }
+
+        .drag-handle { cursor: grab; color: #cbd5e1; font-size: 16px; user-select: none; display: inline-block; padding: 4px; }
+        
+        .drag-cell-container { display: flex; align-items: center; justify-content: flex-start; gap: 4px; width: 100%; height: 100%; }
+        .row-hover-actions { display: none; background: var(--panel-bg); z-index: 20; padding: 2px; gap: 2px; flex-direction: row; }
+        tr.matrix-row:hover .row-hover-actions { display: flex; }
+        .row-action-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+        .row-action-btn:hover { background: #f1f5f9; color: var(--accent-color); }
+        .row-action-btn.danger-action:hover { background: #fee2e2; color: var(--danger-color); }
+
+        .table-input { width: 100%; height: 30px; padding: 4px 8px; border: 1px solid transparent; background-color: transparent; font-size: 13px; color: var(--text-primary); border-radius: 4px; text-overflow: ellipsis; }
+        .table-input:hover { border-color: var(--border-color); background-color: #fff; }
+        .table-input:focus { border-color: var(--accent-color); background-color: #fff; outline: none; }
+
+        /* Rich content editable input for notes */
+        div.table-input.content-editable-cell {
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        div.table-input.content-editable-cell::-webkit-scrollbar { display: none; }
+        div.table-input.content-editable-cell:empty:before {
+            content: attr(data-placeholder);
+            color: #94a3b8;
+        }
+
+        select.table-input { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23ffffff' d='M0 0h10L5 6z'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+        select.table-input-darktext { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%231e293b' d='M0 0h10L5 6z'/></svg>"); }
+
+        .cell-disabled { background-color: var(--disabled-gray-bg) !important; color: var(--text-secondary) !important; cursor: not-allowed; pointer-events: none; opacity: 0.5; }
+        .cell-required-empty { background-color: var(--error-red-required) !important; border: 1px solid rgba(153, 27, 27, 0.15) !important; color: var(--error-red-text) !important; }
+        .cell-warning { background-color: var(--warning-amber-bg) !important; border-color: var(--warning-amber-border) !important; color: var(--warning-amber-text) !important; }
+        .cell-valid { background-color: var(--valid-green-bg) !important; border-color: var(--valid-green-border) !important; color: var(--valid-green-text) !important; }
+        .read-only-cell { color: var(--text-secondary); font-weight: 500; background-color: rgba(248, 250, 252, 0.5); display: block; line-height: 28px; height: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .empty-placeholder { padding: 48px; text-align: center; color: var(--text-secondary); font-style: italic; background: #fff; border-radius: 0 0 8px 8px; }
+
+        .validation-warning-container { position: relative; display: block; width: 100%; overflow: visible !important; }
+        .validation-warning-container::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; background-color: var(--danger-color); border-radius: 50%; z-index: 100; pointer-events: none; }
+        .validation-warning-container:hover::before { content: "Warning: Live Session Date cannot occur before the Hire Start Date."; position: absolute; bottom: calc(100% + 8px); right: 0; width: 240px; background-color: #1e293b; color: #ffffff; font-size: 11px; line-height: 1.4; padding: 8px 12px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15); z-index: 9999 !important; white-space: normal; word-wrap: break-word; pointer-events: none; }
+
+        #printTemplateContainer { display: none; }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0.6cm; }
+            body { background: #ffffff !important; color: #000000 !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; overflow: visible !important; }
+            
+            /* Aggressive omission of App UI layers to enforce strict print boundaries */
+            .container, .floating-calendar, .calendar-tooltip, .bulk-action-bar, .top-scrollbar-container, .workspace-tabs-container, .custom-confirm-overlay { display: none !important; }
+            
+            #printTemplateContainer { display: block !important; width: 100% !important; }
+
+            /* Block wrapper for guaranteed page breaks across flex environments */
+            .page-break-wrapper { page-break-after: always !important; break-after: page !important; display: block !important; width: 100%; height: 100vh; overflow: hidden; }
+
+            .print-cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #0b2545 !important; color: #ffffff !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .cover-title-brand { font-size: 20px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 20px; color: #8da9c4 !important; text-align: center; }
+            .cover-main-header { font-size: 48px; font-weight: 800; margin: 0 0 40px 0; border-bottom: 3px solid rgba(255,255,255,0.2); padding-bottom: 24px; width: 85%; max-width: 800px; text-align: center; text-transform: uppercase; }
+            .cover-metadata-card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); padding: 32px 48px; border-radius: 12px; width: 70%; max-width: 600px; }
+            .cover-meta-row { display: flex; margin-bottom: 14px; font-size: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px; }
+            .cover-meta-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+            .cover-meta-label { font-weight: 700; width: 160px; color: #8da9c4 !important; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+            .cover-meta-value { font-weight: 400; color: #ffffff !important; flex-grow: 1; font-size: 16px; text-align: left; }
+
+            .print-info-page { height: 100%; padding: 30px 40px; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b !important; background-color: #ffffff !important; display: flex; flex-direction: column; justify-content: center; }
+            .info-main-title { font-size: 26px; font-weight: 800; color: #0284c7 !important; text-align: center; text-transform: uppercase; margin-bottom: 36px; letter-spacing: 1px; }
+            .info-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; }
+            .info-card { display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.6; text-align: justify; }
+            .info-card h3 { font-size: 14px; font-weight: 700; color: #0f172a !important; margin: 0 0 4px 0; display: flex; align-items: center; gap: 6px; }
+            .info-contact-footer { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 16px; font-size: 14px; color: #475569 !important; font-weight: 500; }
+            .info-contact-footer span { color: #0f172a !important; font-weight: 700; }
+
+            .print-data-container { page-break-before: always !important; break-before: page !important; display: block !important; opacity: 1 !important; visibility: visible !important; padding: 24px 0; }
+            .print-data-header { font-size: 20px; font-weight: 700; margin-bottom: 16px; border-bottom: 2px solid #0f172a; padding-bottom: 6px; display: flex; justify-content: space-between; }
+            table.print-table { display: table !important; width: 100% !important; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
+            table.print-table th { background-color: #f1f5f9 !important; color: #0f172a !important; font-weight: 700; padding: 10px 8px; border: 1px solid #cbd5e1; text-transform: uppercase; font-size: 10px; }
+            table.print-table td { padding: 10px 8px; border: 1px solid #e2e8f0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; vertical-align: top; }
+            table.print-table td a { color: #0284c7; text-decoration: underline; }
+            
+            .pcol-title   { width: 35%; }
+            .pcol-inst    { width: 14%; }
+            .pcol-target  { width: 21%; }
+            .pcol-dur     { width: 7%; text-align: center; }
+            .pcol-notes   { width: 14%; }
+            .pcol-due     { width: 9%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Learning Plan Workspace v0.04</h1>
+        <p>By Joe Jongue</p>
+    </header>
+
+    <div class="workspace-tabs-container" id="workspaceTabsContainer">
+        </div>
+
+    <div class="section-panel-label">👤 New Hire Profile Details</div>
+    <div class="config-grid" id="globalConfigGrid">
+        <div class="config-field"><label>Pride Member Name</label><input type="text" id="metaPrideName" placeholder="Enter Candidate Name..."></div>
+        <div class="config-field"><label>Role Title</label><input type="text" id="metaRoleTitle" placeholder="Enter Position Title..."></div>
+        <div class="config-field"><label>Start Date</label><input type="date" id="metaStartDate"></div>
+        <div class="config-field"><label>Orientation</label><select id="paramB4"><option value="">-- Select One --</option></select></div>
+        <div class="config-field"><label>Time Zone in Cornerstone</label><select id="paramB5"><option value="">-- Select One --</option></select></div>
+        <div class="config-field"><label>Time Zone of New Hire</label><select id="paramB6"><option value="">-- Select One --</option></select></div>
+        <div class="config-field"><label>Region</label><select id="paramB7"><option value="">-- Select One --</option></select></div>
+        <div class="config-field"><label>Product</label><input type="text" id="metaProduct" placeholder="Enter Product System..."></div>
+        <div class="config-field"><label>Learning Plan Owner</label><input type="text" id="metaLPOwner" placeholder="Enter Plan Owner Name..."></div>
+    </div>
+
+    <div class="middle-section-container">
+        <div class="middle-section-block">
+            <div class="section-panel-label">📋 Curriculum Templates</div>
+            <div class="template-panel-flex">
+                <div class="template-controls">
+                    <div class="config-field">
+                        <label>Product Template Blueprint</label>
+                        <select id="templateProductDropdown">
+                            <option value="">-- Select Corporate Template Track --</option>
+                            </select>
+                    </div>
+                    <div class="config-field">
+                        <label>Role Matrix Blueprint</label>
+                        <select id="templateRoleDropdown">
+                            <option value="">-- Select Assignment Adaptation Role --</option>
+                            <option value="SupportAnalyst">Support Analyst</option>
+                            <option value="AccountManager">Account Manager</option>
+                            <option value="AccountExecutive">Account Executive</option>
+                            <option value="SalesDeliveryManager">Sales Delivery Manager</option>
+                            <option value="ProjectManager">Project Manager</option>
+                            <option value="ProjectCoordinator">Project Coordinator</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="importTemplateBtn" class="btn btn-primary" onclick="applySelectedTemplate()" style="align-self: center; margin-top: 8px;" disabled>📥 Import Template</button>
+            </div>
+        </div>
+
+        <div class="middle-section-block">
+            <div class="section-panel-label">⚡ Actions</div>
+            <div class="actions-grid" id="actionsPanel">
+                <button class="btn btn-primary" style="background:#0f172a; color:#fff;" onclick="toggleCalendarWidget()">📅 Calendar</button>
+                <button class="btn btn-success" onclick="insertAdHocAtTop()">➕ Add Row</button>
+                <button class="btn btn-primary" style="background:#8b5cf6;" onclick="document.getElementById('importFileInput').click()">📂 Import File</button>
+                <button class="btn btn-primary" onclick="executeChronologicalSort()">⇅ Sort Schedule</button>
+                <button class="btn btn-excel" onclick="generateAndDownloadBinaryXLSX()">📊 Export .xlsx</button>
+                <button class="btn btn-primary" style="background:#0ea5e9;" onclick="generateAndDownloadTemplateXLSX()">💾 Save Template</button>
+                <button class="btn btn-primary" style="background:#475569; grid-column: span 2;" onclick="generateAndTriggerPrintJob()">🖨️ Print Draft</button>
+                <button class="btn btn-danger" style="grid-column: span 2;" onclick="clearWorkspace()">🗑️ Clear Table</button>
+                <input type="file" id="importFileInput" style="display:none;" accept=".xlsx, .xls, .csv" onchange="handleFileImport(event)">
+            </div>
+        </div>
+        
+        <div class="middle-section-block">
+            <div class="section-panel-label" style="justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 6px;">📊 Summary Metrics</div>
+                <button class="refresh-btn" onclick="runGlobalRecalculationEngine()" title="Recalculate Metrics">🔄</button>
+            </div>
+            <div class="summary-panel" id="summaryPanel">
+                </div>
+        </div>
+    </div>
+
+    <div class="paste-notice">
+        💡 <strong>Interactive Table:</strong> Select rows to copy/delete. Duplicate rows, or type <code>[Link Text](https://url.com)</code> in notes to embed links.
+    </div>
+
+    <div id="bulkActionBar" class="bulk-action-bar">
+        <div class="bulk-action-text"><span id="bulkActionCount">0</span> row(s) selected</div>
+        <div style="display: flex; gap: 8px;">
+            <button id="copySelectedBtn" class="bulk-action-btn" style="background: rgba(255,255,255,0.3);" onclick="executeBulkAction('copy')">Copy Selected</button>
+            <button class="bulk-action-btn" onclick="executeBulkAction('keep')">Keep Only Selected</button>
+            <button class="bulk-action-btn danger" onclick="executeBulkAction('delete')">Delete Selected</button>
+        </div>
+    </div>
+
+    <div class="top-scrollbar-container" id="topScrollContainer">
+        <div id="topScrollDummy" style="height: 1px;"></div>
+    </div>
+    
+    <div class="matrix-viewport" id="matrixViewport">
+        <table id="matrixTable" class="matrix-table">
+            <thead>
+                <tr>
+                    <th class="col-select"><div class="th-content"><input type="checkbox" id="selectAllCheckbox"></div></th>
+                    <th class="col-drag" style="cursor:default;"></th>
+                    <th class="col-title" data-sort="title"><div class="th-content"><span>Training Title</span><span class="sort-indicator" id="sort_title">↕</span></div></th>
+                    <th class="col-type" data-sort="type"><div class="th-content"><span>Type</span><span class="sort-indicator" id="sort_type">↕</span></div></th>
+                    <th class="col-instructor" data-sort="instructor"><div class="th-content"><span>Instructor</span><span class="sort-indicator" id="sort_instructor">↕</span></div></th>
+                    <th class="col-date" data-sort="liveSessionDate"><div class="th-content"><span>Live Date</span><span class="sort-indicator" id="sort_liveSessionDate">↕</span></div></th>
+                    <th class="col-time" data-sort="startTime"><div class="th-content"><span>Start Time</span><span class="sort-indicator" id="sort_startTime">↕</span></div></th>
+                    <th class="col-duration" data-sort="duration"><div class="th-content"><span>Duration</span><span class="sort-indicator" id="sort_duration">↕</span></div></th>
+                    <th class="col-due" data-sort="dueDate"><div class="th-content"><span>Due Date</span><span class="sort-indicator" id="sort_dueDate">↕</span></div></th>
+                    <th class="col-status" data-sort="eventStatus"><div class="th-content"><span>Event Status</span><span class="sort-indicator" id="sort_eventStatus">↕</span></div></th>
+                    <th class="col-locator" data-sort="locatorNumber"><div class="th-content"><span>Locator Number</span><span class="sort-indicator" id="sort_locatorNumber">↕</span></div></th>
+                    <th class="col-notes" data-sort="additionalNotes"><div class="th-content"><span>Additional Notes</span><span class="sort-indicator" id="sort_additionalNotes">↕</span></div></th>
+                    <th class="col-tz" data-sort="sessionTimezone"><div class="th-content"><span>Session Timezone</span><span class="sort-indicator" id="sort_sessionTimezone">↕</span></div></th>
+                    <th class="col-target" data-sort="targetDateTime"><div class="th-content"><span>Target Date/Time</span><span class="sort-indicator" id="sort_targetDateTime">↕</span></div></th>
+                    <th class="col-lp-notes" data-sort="lpOwnerNotes"><div class="th-content"><span>LP Owner Notes to Coordinator</span><span class="sort-indicator" id="sort_lpOwnerNotes">↕</span></div></th>
+                </tr>
+            </thead>
+            <tbody id="matrixBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-placeholder">No active records parsed. Apply a curriculum template or paste clipboard cells to populate layout data rows.</div>
+    </div>
+</div>
+
+<div class="floating-calendar" id="floatingCalendar">
+    <div class="calendar-drag-handle" id="calendarDragHandle">
+        <div class="calendar-title">📅 Reference Calendar</div>
+        <div class="calendar-window-controls">
+            <button onclick="minimizeCalendar(event)" title="Minimize">−</button>
+            <button onclick="toggleCalendarWidget(event)" title="Close">✕</button>
+        </div>
+    </div>
+    <div id="calendarHint" class="calendar-hint">💡 Drag header to move</div>
+    <div class="calendar-body">
+        <div class="calendar-nav-header">
+            <button id="prevMonthBtn">&lt;</button>
+            <div class="calendar-month-year" id="calendarMonthYear"></div>
+            <button id="nextMonthBtn">&gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <div class="calendar-day-name">Su</div>
+            <div class="calendar-day-name">Mo</div>
+            <div class="calendar-day-name">Tu</div>
+            <div class="calendar-day-name">We</div>
+            <div class="calendar-day-name">Th</div>
+            <div class="calendar-day-name">Fr</div>
+            <div class="calendar-day-name">Sa</div>
+        </div>
+    </div>
+</div>
+
+<div id="calendarSingletonTooltip" class="calendar-tooltip"></div>
+<div id="printTemplateContainer"></div>
+
+<div id="customConfirmOverlay" class="custom-confirm-overlay">
+    <div class="custom-confirm-dialog">
+        <div class="custom-confirm-message" id="customConfirmMessage">Are you sure?</div>
+        <div class="custom-confirm-actions">
+            <button id="customConfirmCancelBtn" class="btn btn-cancel">Cancel</button>
+            <button id="customConfirmYesBtn" class="btn btn-danger">Yes, proceed</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =====================================================================
+       DECOUPLED DATABASE CONSTANTS
+       ===================================================================== */
+    const TEMPLATE_NAMES = {
+        "PMX": "PMX (Commercial Management)",
+        "PropertyTree": "Property Tree",
+        "Vault": "Vault",
+        "Horizon": "Horizon"
+    };
+
+    const TEMPLATE_DATABASE = {
+        "PMX": [
+            ["Microsoft Teams Overview", "Video", "Self-led", "", "", "1 hr"],
+            ["Triage and Troubleshooting", "eLearning", "Self-led", "", "", "45 mins"],
+            ["MRI Cloud Overview", "Video", "Self-led", "", "", "1 hr"],
+            ["Introduction to Partner Connect", "Video", "Self-led", "", "", "1 hr"],
+            ["MRI: Agora Introduction", "Video", "Self-led", "", "", "30 mins"],
+            ["PMX: Web Navigation", "Video", "Self-led", "", "", "20 mins"],
+            ["AWS Voice Agent Training - NA", "Video", "Self-led", "", "", "30  mins"],
+            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 mins"],
+            ["Salesforce: Introduction", "Video", "Self-led", "", "", "1 hr"],
+            ["General Troubleshooting", "Live Session", "Ullas Madappa", "", "11:30 AM", "1 hr"],
+            ["PMX: SQL Introduction", "eLearning", "Self-led", "", "", "1.5 hrs"],
+            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "Ricci Bibit", "", "3:00 PM", "2 hrs"],
+            ["PMX: Database Schema", "Live Session", "Lilly Hanko", "", "9:00 PM", "1 hr"],
+            ["SQL I Activity", "eLearning", "Self-led", "", "", "1.5 hrs"],
+            ["SQL I Exam", "eLearning", "Self-led", "", "", "1.5 hrs"],
+            ["Salesforce for Global Services - Introduction", "Live Session", "Lilly Hanko", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: SQL I", "Live Session", "Rylie Woods", "", "4:30 PM", "1.5 hrs"],
+            ["PMX: Reporting", "Live Session", "Rylie Woods", "", "7:00 PM", "1 hr"],
+            ["PMX: General Ledger - Prework (Podcast)", "Video", "Self-led", "", "", "20 mins"],
+            ["PMX: General Ledger - Journal Entries eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Accounting I", "Live Session", "Lilly Hanko", "", "3:00 PM", "1 hr"],
+            ["PMX: General Ledger - Financial Formats eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Accounts Payable - Vendors eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Accounts Payable - Prework (Podcast)", "Video", "Self-led", "", "", "20 mins"],
+            ["PMX: Commercial Management - Prework", "Material", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Building Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Accounts Payable - Invoices eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Accounts Payable - Bank Reconciliation eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Suite Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Building Accounting Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Leases - Lease Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Introduction", "Live Session", "Kristina Miller", "", "4:30 PM", "1.5 hrs"],
+            ["PMX: Commercial Management - Leases - Lease Administration eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Leases - Miscellaneous eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management Setup and Maintenance eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Leases - Billing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Monthly Activities - Creating Recurring Charges and Printing Statements eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Leasing", "Live Session", "Rylie Woods", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Commercial Management - Batches - Daily Batch Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Batches - Reviewing and Posting Batches eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management – Income Categories", "Live Session", "Rylie Woods", "", "3:00 PM", "1 hr"],
+            ["PMX: Commercial Management - Batches - Additional Batch Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Monthly Activities - Creating Journal Entries and Closing a Period eLeaning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Monthly Activities - Calculating Fees and Interest eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management – Rentup/Statements", "Live Session", "Rylie Woods", "", "3:00 PM", "1 hr"],
+            ["PMX: Commercial Management - Other Accounts Receivable - Daily Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Leases - Tenant Inquiry eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management - Transactions (Part I)", "External Learning (no CSOD assignment)", "Sara Schaffer", "", "", "1 hr"],
+            ["PMX: Commercial Management - Transactions (Part II)", "External Learning (no CSOD assignment)", "Sara Schaffer", "", "", "1 hr"],
+            ["PMX: Commercial Management - Building and Suite Miscellaneous eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Commercial Management – Reconciliation and Management Options", "Live Session", "Rylie Woods", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Distributive Processing", "Live Session", "Chris Demarest", "", "7:00 PM", "1 hr"],
+            ["Salesforce: Omni-Channel and Support Chat", "Video", "Self-led", "", "", "35 mins"],
+            ["MyMRI Client Portal Overview", "Video", "Self-led", "", "", "30 mins"],
+            ["Salesforce for Global Services - Managing Cases", "Live Session", "Lilly Hanko", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Corporate Accounts Receivable - Introduction", "Live Session", "Chris Demarest", "", "3:00 PM", "1.5 hrs"],
+            ["Mandatory Compliance Training", "External Learning (no CSOD assignment)", "Self-led", "", "", "5 hrs"],
+            ["Platform X: Report Gateway - Navigation and Running Reports eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Platform X: Report Gateway - Sharing and Scheduling Items eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Platform X: Report Gateway - Packets and Batches eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Platform X: Report Gateway - Users and Security eLearning", "eLearning", "Self-led", "", "", "1 hr"],
+            ["PMX: Application Studio - Introduction", "Live Session", "Chris Demarest", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Application Studio - Page Builder - Building a Page", "Live Session", "Chris Demarest", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Security Console", "Live Session", "Chris Demarest", "", "8:00 PM", "1.5 hrs"],
+            ["PMX: Report Studio - Report Builder", "Live Session", "Lilly Hanko", "", "3:00 PM", "1 hr"],
+            ["PMX: Flexibility Toolkit - Report Design I", "Live Session", "Chris Demarest", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Import/Export - Introduction", "Live Session", "Lilly Hanko", "", "8:30 PM", "1 hr"],
+            ["PMX: Flexibility Toolkit - Web Design I", "Live Session", "Rylie Woods", "", "3:00 PM", "1.5 hrs"],
+            ["PMX: Flexibility Toolkit - Database Design", "Live Session", "Chris Demarest", "", "7:00 PM", "1 hr"]
+        ],
+        "PropertyTree": [
+            ["Understanding Australian Work Culture", "Live Session", "Joe Jongue", "", "10:00 AM", "1.5 hrs"],
+            ["Residential Property Management in ANZ: Understanding the Property Management Lifecycle", "Live Session", "Joe Jongue", "", "2:00 PM", "1.5 hrs"],
+            ["Residential Property Sales in ANZ: Understanding the Property Lifecycle", "Live Session", "James Elliott", "", "2:00 PM", "1.5 hrs"],
+            ["MRI Cloud Overview", "Video", "Self-led", "", "", "40 min"],
+            ["Agora: Hello and Agora Gateway - Introduction", "Video", "Self-led", "", "", "30 min"],
+            ["Property Tree: Navigation", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Ownership Profiles", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Adding Property Profiles Residential", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Tenancy Profiles Residential", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Professional Communication in Services", "Live Session", "Joe Jongue", "", "11:30 AM", "1 hr"],
+            ["AWS Voice Agent Training - APAC", "Video", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Communications", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Managing Tasks", "eLearning", "Self-led", "", "", "1 hr"],
+            ["General Troubleshooting", "Live Session", "Joe Jongue", "", "2:30 PM", "1.5 hrs"],
+            ["Property Tree: Property Maintenance", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Inspection Management", "eLearning", "Self-led", "", "", "1 hr"],
+            ["AWS VoiceTeaining Quiz - Agent", "Quiz", "Quiz", "", "", "30 min"],
+            ["Property Tree: Arrears Management", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Lease Renewal and Rent Changes", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Vacating Process and Archiving Profiles", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: New Tenancies", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Invoice Management", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Transactions", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Accounts and Fees", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Bank Reconciliation", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Owner Payment and End of Month", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Property Tree: Navigation and Property Tree Profiles", "Live Session", "Janelle Lawrence", "", "2:30 PM", "1 hr"],
+            ["Property Tree: Communications and Managing Tasks", "Live Session", "Janelle Lawrence", "", "2:30 PM", "1 hr"],
+            ["Property Tree: Property Maintenance and Inspection Management", "Live Session", "Janelle Lawrence", "", "2:30 PM", "1 hr"],
+            ["Property Tree: Arrears Management, Lease Renewals and Rent Changes", "Live Session", "Janelle Lawrence", "", "2:30 PM", "1 hr"],
+            ["Property Tree: Vacating Process, Archiving Profiles and New Tenancies", "Live Session", "Janelle Lawrence", "", "2:30 PM", "1 hr"]
+        ],
+        "Vault": [
+            ["Residential Property Management in ANZ: Understanding the Property Management Lifecycle", "Live Session", "Joe Jongue", "", "1:30 PM", "1 hr 30 min"],
+            ["MRI Agora and Sunshine Falls", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Vault: Getting Started for Admins", "Video", "Self-led", "", "", "1 hr 9 min"],
+            ["Residential Property Sales in ANZ: Understanding the Property Lifecycle", "Live Session", "Joe Jongue", "", "1:30 PM", "1 hr 30 min"],
+            ["Vault: Getting Started for Sales", "Video", "Self-led", "", "", "1 hr 9 min"],
+            ["Vault: Sales Process (Appraisal > Settlement)", "Video", "Self-led", "", "", "1 hr 2min"],
+            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "1 hr"],
+            ["Vault: Buyers Management", "Video", "Self-led", "", "", "1 hr 7 min"],
+            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "Joe Jongue", "", "1:30 PM", "1 hr 30 min"],
+            ["Vault: Action List & Automation", "Video", "Self-led", "", "", "1 hr 5 min"],
+            ["Vault: Vault App", "Video", "Self-led", "", "", "1hr 5 min"],
+            ["Triage & Troubleshooting", "eLearning", "Self-led", "", "", "45 min"],
+            ["Vault: Becoming an eMarketing Guru", "Video", "Self-led", "", "", "42 min"],
+            ["Vault: Mastering Data Cleanup with Vault", "Video", "Self-led", "", "", "1 hr"],
+            ["Vault: Secure Sign Integration", "Video", "Self-led", "", "", "17 min"],
+            ["General Troubleshooting", "Live Session", "Joe Jongue", "", "1:30 PM", "1 hr 30 min"],
+            ["Support Process: Ticket Management (Zendesk)", "Live Session", "Joe Jongue", "", "1:00 PM", "45 min"],
+            ["Support Process: Ticket Management (Zendesk) Assessment", "Live Session", "Joe Jongue", "", "1:00 PM", "30 min"]
+        ],
+        "Horizon": [
+            ["MRI Cloud Overview", "Video", "Self-led", "", "", "40 min"],
+            ["MRI Agora Introduction", "Video", "Self-led", "", "", "20 min"],
+            ["AWS Voice Agent Training - APAC", "Video", "Self-led", "", "", "1hr"],
+            ["Agora: Hello and MRI Agora Gateway - Introduction", "Video", "Self-led", "", "", "30 min"],
+            ["Introduction to Partner Connect", "Video", "Self-led", "", "", "45 min"],
+            ["Accounting I", "Video", "Self-led", "", "", "49 min"],
+            ["AWS Voice Training Quiz - Agent", "Quiz", "Quiz", "", "", "20 min"],
+            ["Industry Overview - Occupier in ANZ", "Live Session", "Mitch Cross", "", "11:00 AM", "1hr 30 min"],
+            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 min"],
+            ["Triage and Troubleshooting", "eLearning", "Self-led", "", "", "45 min"],
+            ["Providing Exceptional Customer Service Workshop", "Live Session", "Joe Jongue", "", "1:30 PM", "1hr 30 min"],
+            ["Salesforce for Global Services - Introduction", "Video", "Self-led", "", "", "1hr 30 min"],
+            ["Salesforce for Global Services - Managing Cases", "Video", "Self-led", "", "", "1hr 30 min"],
+            ["Horizon V11: Overview", "Video", "Self-led", "", "", "1hr 28 min"],
+            ["General Troubleshooting", "Live Session", "Joe Jongue", "", "1:30 PM", "1hr 30 min"],
+            ["Horizon V11: Property Structure I", "Video", "Self-led", "", "", "2hr 13 min"],
+            ["Horizon V11: Lease Payables I", "Video", "Self-led", "", "", "58 min"],
+            ["Horizon V11: Lease Receivables I", "Video", "Self-led", "", "", "1hr 19 min"],
+            ["Horizon V11: Accounts Receivables & Credit Control I", "Video", "Self-led", "", "", "1hr 56 min"],
+            ["Horizon V11: Accounts Payable I", "Video", "Self-led", "", "", "1hr 11 min"],
+            ["Horizon V11: Finance Structure & Cash Accounting I", "Video", "Self-led", "", "", "1hr 45 min"],
+            ["Horizon V11: Purchasing I", "Video", "Self-led", "", "", "1hr"],
+            ["Horizon Advance v11", "Video", "Self-led", "", "", "1hr 50 min"],
+            ["Horizon V11: System Administration I", "Video", "Self-led", "", "", "1hr 26 min"],
+            ["ProLease Enterprise / Horizon Courses", "Curriculum", "Self-led", "", "", "9hr 55 min"]
+        ]
+    };
+
+    /* =====================================================================
+       APPLICATION STATE & MULTI-TAB ENGINE
+       ===================================================================== */
+    const appLookups = {
+        orientation: ["Jan A","Jan B","Feb A","Feb B","Mar A","Mar B","Apr A","Apr B","May A","May B","Jun A","Jun B","Jul A","Jul B","Aug A","Aug B","Sep A","Sep B","Oct A","Oct B","Nov A","Nov B","Dec A","Dec B","N/A"],
+        cornerstoneTimezones: [
+            { label: "UTC-05:00 EST (US & Canada)", offset: -300 }, { label: "UTC-04:00 EDT (US & Canada)", offset: -240 },
+            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", offset: 0 }, { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", offset: 60 },
+            { label: "UTC+02:00 SAST (Harare, Pretoria)", offset: 120 }, { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", offset: 330 },
+            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", offset: 480 }, { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", offset: 600 },
+            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", offset: 660 }, { label: "UTC+12:00 NZST (Auckland, Wellington)", offset: 720 },
+            { label: "UTC+13:00 NZDT (Auckland, Wellington)", offset: 780 }
+        ],
+        newHireTimezones: [
+            { label: "UTC-07:00 MST (US & Canada)", offset: -420 }, { label: "UTC-06:00 MDT (US & Canada)", offset: -360 },
+            { label: "UTC-06:00 CST (US & Canada)", offset: -360 }, { label: "UTC-05:00 CDT (US & Canada)", offset: -300 },
+            { label: "UTC-05:00 EST (US & Canada)", offset: -300 }, { label: "UTC-04:00 EDT (US & Canada)", offset: -240 },
+            { label: "UTC-08:00 PST (US & Canada)", offset: -480 }, { label: "UTC-07:00 PDT (US & Canada)", offset: -420 },
+            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", offset: 0 },   { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", offset: 60 },
+            { label: "UTC+02:00 SAST (Harare, Pretoria)", offset: 120 },  { label: "UTC+04:00 GST (Abu Dhabi, Muscat)", offset: 240 },
+            { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", offset: 330 }, { label: "UTC+08:00 PHST (Philippines)", offset: 480 },
+            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", offset: 480 }, { label: "UTC+08:00 AWST (Perth)", offset: 480 },
+            { label: "UTC+10:00 AEST (Brisbane)", offset: 600 },             { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", offset: 600 },
+            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", offset: 660 }, { label: "UTC+12:00 NZST (Auckland, Wellington)", offset: 720 },
+            { label: "UTC+13:00 NZDT (Auckland, Wellington)", offset: 780 }
+        ],
+        region: ["APAC ", "Dubai ", "India ", "UK ", "ZA ", "North America ", "Philippines (APAC)", "Philippines (NA)", "Philippines (EMEA)"],
+        eventStatus: ["Exists in Cornerstone", "Needs to be created in Cornerstone"],
+        startTimes: [
+            { display: "6:00 AM", value: "06:00" }, { display: "6:15 AM", value: "06:15" }, { display: "6:30 AM", value: "06:30" }, { display: "6:45 AM", value: "06:45" },
+            { display: "7:00 AM", value: "07:00" }, { display: "7:15 AM", value: "07:15" }, { display: "7:30 AM", value: "07:30" }, { display: "7:45 AM", value: "07:45" },
+            { display: "8:00 AM", value: "08:00" }, { display: "8:15 AM", value: "08:15" }, { display: "8:30 AM", value: "08:30" }, { display: "8:45 AM", value: "08:45" },
+            { display: "9:00 AM", value: "09:00" }, { display: "9:15 AM", value: "09:15" }, { display: "9:30 AM", value: "09:30" }, { display: "9:45 AM", value: "09:45" },
+            { display: "10:00 AM", value: "10:00" }, { display: "10:15 AM", value: "10:15" }, { display: "10:30 AM", value: "10:30" }, { display: "10:45 AM", value: "10:45" },
+            { display: "11:00 AM", value: "11:00" }, { display: "11:15 AM", value: "11:15" }, { display: "11:30 AM", value: "11:30" }, { display: "11:45 AM", value: "11:45" },
+            { display: "12:00 PM", value: "12:00" }, { display: "12:15 PM", value: "12:15" }, { display: "12:30 PM", value: "12:30" }, { display: "12:45 PM", value: "12:45" },
+            { display: "1:00 PM", value: "13:00" }, { display: "1:15 PM", value: "13:15" }, { display: "1:30 PM", value: "13:30" }, { display: "1:45 PM", value: "13:45" },
+            { display: "2:00 PM", value: "14:00" }, { display: "2:15 PM", value: "14:15" }, { display: "2:30 PM", value: "14:30" }, { display: "2:45 PM", value: "14:45" },
+            { display: "3:00 PM", value: "15:00" }, { display: "3:15 PM", value: "15:15" }, { display: "3:30 PM", value: "15:30" }, { display: "3:45 PM", value: "15:45" },
+            { display: "4:00 PM", value: "16:00" }, { display: "4:15 PM", value: "16:15" }, { display: "4:30 PM", value: "16:30" }, { display: "4:45 PM", value: "16:45" },
+            { display: "5:00 PM", value: "17:00" }, { display: "5:15 PM", value: "17:15" }, { display: "5:30 PM", value: "17:30" }, { display: "5:45 PM", value: "17:45" },
+            { display: "6:00 PM", value: "18:00" }, { display: "6:15 PM", value: "18:15" }, { display: "6:30 PM", value: "18:30" }, { display: "6:45 PM", value: "18:45" },
+            { display: "7:00 PM", value: "19:00" }, { display: "7:15 PM", value: "19:15" }, { display: "7:30 PM", value: "19:30" }, { display: "7:45 PM", value: "19:45" },
+            { display: "8:00 PM", value: "20:00" }, { display: "8:15 PM", value: "20:15" }, { display: "8:30 PM", value: "20:30" }, { display: "8:45 PM", value: "20:45" },
+            { display: "9:00 PM", value: "21:00" }, { display: "9:15 PM", value: "21:15" }, { display: "9:30 PM", value: "21:30" }, { display: "9:45 PM", value: "21:45" },
+            { display: "10:00 PM", value: "22:00" }
+        ],
+        courseTypes: ["Live Session", "eLearning", "Video", "Material", "Curriculum", "Quiz", "External Learning (no CSOD assignment)"]
+    };
+
+    const generateId = () => window.crypto && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+
+    // Multi-Tab Architecture
+    let sessions = [];
+    let activeSessionId = null;
+    let templateCounter = 1;
+
+    // Working pointers mapped to the active session to minimize legacy code disruption
+    let workspaceDataset = [];
+    let selectedRowIds = new Set();
+
+    // Sort Tracking
+    let activeSortColumnKey = '';
+    let isCurrentSortDirectionAscending = true;
+
+    // Calendar State
+    let calendarCurrentDate = new Date(); 
+    let calendarSessionMap = {};
+
+    /* =====================================================================
+       INITIALIZATION
+       ===================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+        populateSelectElement('paramB4', appLookups.orientation);
+        populateSelectElement('paramB5', appLookups.cornerstoneTimezones.map(t => t.label));
+        populateSelectElement('paramB6', appLookups.newHireTimezones.map(t => t.label));
+        populateSelectElement('paramB7', appLookups.region);
+        
+        // Dynamically inject ALL Templates into the dropdown
+        const dropdown = document.getElementById('templateProductDropdown');
+        dropdown.innerHTML = '<option value="">-- Select Corporate Template Track --</option>';
+        Object.keys(TEMPLATE_NAMES).forEach(templateKey => {
+            const opt = document.createElement('option');
+            opt.value = templateKey;
+            opt.textContent = TEMPLATE_NAMES[templateKey];
+            dropdown.appendChild(opt);
+        });
+        
+        // Restore local state & handle migration if necessary
+        const savedState = localStorage.getItem('learningPlanMatrixSave');
+        if (savedState) {
+            try { 
+                const parsed = JSON.parse(savedState);
+                if (Array.isArray(parsed) && parsed.length > 0 && !parsed[0].hasOwnProperty('sessionId')) {
+                    // MIGRATION: Old save file detected (Array of rows instead of Array of sessions)
+                    sessions = [ createNewSessionObject(parsed) ];
+                } else if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].hasOwnProperty('sessionId')) {
+                    // Valid multi-session load
+                    sessions = parsed;
+                    // Rehydrate Sets
+                    sessions.forEach(s => s.selectedIds = new Set(s.selectedIdsArray || []));
+                    templateCounter = Math.max(...sessions.map(s => s.templateNum)) + 1;
+                } else {
+                    sessions = [ createNewSessionObject() ];
+                }
+            } catch(e) { sessions = [ createNewSessionObject() ]; }
+        } else {
+            sessions = [ createNewSessionObject() ];
+        }
+        
+        // Initialize Active Tab
+        loadSessionIntoUI(sessions[0].sessionId);
+
+        // Name Sync Listener for active tab
+        document.getElementById('metaPrideName').addEventListener('input', (e) => {
+            const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+            if(activeSession) {
+                activeSession.config.prideName = e.target.value;
+                renderTabs();
+            }
+        });
+
+        document.getElementById('globalConfigGrid').addEventListener('change', runGlobalRecalculationEngine);
+        document.getElementById('templateProductDropdown').addEventListener('change', (e) => {
+            document.getElementById('importTemplateBtn').disabled = !e.target.value;
+        });
+
+        // Horizontal Scrollbar Synchronization
+        const topScroll = document.getElementById('topScrollContainer');
+        const viewport = document.getElementById('matrixViewport');
+        topScroll.addEventListener('scroll', () => { viewport.scrollLeft = topScroll.scrollLeft; });
+        viewport.addEventListener('scroll', () => { topScroll.scrollLeft = viewport.scrollLeft; });
+
+        setupTableDelegation();
+        setupSortingHeaders();
+        setupViewportDragOverContainer();
+        initCalendar();
+
+        runGlobalRecalculationEngine(); 
+    });
+
+    /* =====================================================================
+       CUSTOM MODAL CONFIRMATION ENGINE
+       ===================================================================== */
+    function showCustomModal(message, isAlert = false, onConfirm = null) {
+        const overlay = document.getElementById('customConfirmOverlay');
+        const msgEl = document.getElementById('customConfirmMessage');
+        const yesBtn = document.getElementById('customConfirmYesBtn');
+        const cancelBtn = document.getElementById('customConfirmCancelBtn');
+
+        msgEl.textContent = message;
+        
+        if (isAlert) {
+            cancelBtn.style.display = 'none';
+            yesBtn.textContent = 'OK';
+            yesBtn.className = 'btn btn-primary';
+        } else {
+            cancelBtn.style.display = 'block';
+            yesBtn.textContent = 'Yes, proceed';
+            yesBtn.className = 'btn btn-danger';
+        }
+
+        overlay.style.display = 'flex';
+
+        // Cleanup bindings
+        const cleanup = () => {
+            overlay.style.display = 'none';
+            yesBtn.onclick = null;
+            cancelBtn.onclick = null;
+        };
+
+        yesBtn.onclick = () => {
+            cleanup();
+            if (onConfirm) onConfirm();
+        };
+
+        cancelBtn.onclick = () => {
+            cleanup();
+        };
+    }
+
+    /* =====================================================================
+       MULTI-TAB ENGINE FUNCTIONS
+       ===================================================================== */
+    
+    function createNewSessionObject(initialDataset = []) {
+        const id = generateId();
+        const num = templateCounter++;
+        return {
+            sessionId: id,
+            templateNum: num,
+            config: {
+                prideName: '', roleTitle: '', startDate: '', orientation: '',
+                tzCornerstone: '', tzHire: '', region: '', product: '', lpOwner: ''
+            },
+            dataset: initialDataset,
+            selectedIds: new Set()
+        };
+    }
+
+    function addNewTab() {
+        saveCurrentUIIntoSession();
+        const newSession = createNewSessionObject();
+        sessions.push(newSession);
+        loadSessionIntoUI(newSession.sessionId);
+    }
+
+    function switchTab(targetId) {
+        if (targetId === activeSessionId) return;
+        saveCurrentUIIntoSession();
+        loadSessionIntoUI(targetId);
+    }
+
+    function deleteTab(targetId, e) {
+        e.stopPropagation(); // Prevent tab switch
+        if (sessions.length === 1) {
+            showCustomModal("You cannot delete the last remaining template. You can clear the table instead.", true);
+            return;
+        }
+        
+        showCustomModal("Are you sure you want to delete this template workspace? This cannot be undone.", false, () => {
+            sessions = sessions.filter(s => s.sessionId !== targetId);
+            if (activeSessionId === targetId) {
+                loadSessionIntoUI(sessions[sessions.length - 1].sessionId);
+            } else {
+                renderTabs();
+            }
+            saveStateToLocalStorage();
+        });
+    }
+
+    function saveCurrentUIIntoSession() {
+        if (!activeSessionId) return;
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        if (!activeSession) return;
+
+        // Save Config DOM Values
+        activeSession.config = {
+            prideName: document.getElementById('metaPrideName').value,
+            roleTitle: document.getElementById('metaRoleTitle').value,
+            startDate: document.getElementById('metaStartDate').value,
+            orientation: document.getElementById('paramB4').value,
+            tzCornerstone: document.getElementById('paramB5').value,
+            tzHire: document.getElementById('paramB6').value,
+            region: document.getElementById('paramB7').value,
+            product: document.getElementById('metaProduct').value,
+            lpOwner: document.getElementById('metaLPOwner').value
+        };
+
+        // Datasets are updated in real-time via the DOM listeners, but we ensure pointers align
+        activeSession.dataset = workspaceDataset;
+        activeSession.selectedIds = selectedRowIds;
+    }
+
+    function loadSessionIntoUI(targetId) {
+        const targetSession = sessions.find(s => s.sessionId === targetId);
+        if (!targetSession) return;
+
+        activeSessionId = targetId;
+
+        // Load Config DOM Values
+        document.getElementById('metaPrideName').value = targetSession.config.prideName || '';
+        document.getElementById('metaRoleTitle').value = targetSession.config.roleTitle || '';
+        document.getElementById('metaStartDate').value = targetSession.config.startDate || '';
+        document.getElementById('paramB4').value = targetSession.config.orientation || '';
+        document.getElementById('paramB5').value = targetSession.config.tzCornerstone || '';
+        document.getElementById('paramB6').value = targetSession.config.tzHire || '';
+        document.getElementById('paramB7').value = targetSession.config.region || '';
+        document.getElementById('metaProduct').value = targetSession.config.product || '';
+        document.getElementById('metaLPOwner').value = targetSession.config.lpOwner || '';
+
+        // Reset Template UI
+        document.getElementById('templateProductDropdown').value = '';
+        document.getElementById('templateRoleDropdown').value = '';
+        document.getElementById('importTemplateBtn').disabled = true;
+
+        // Remap Pointers for active manipulation
+        workspaceDataset = targetSession.dataset;
+        selectedRowIds = targetSession.selectedIds || new Set();
+
+        // Reset Sort
+        activeSortColumnKey = '';
+        document.querySelectorAll('.sort-indicator').forEach(el => el.textContent = '↕');
+
+        renderTabs();
+        runGlobalRecalculationEngine();
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('workspaceTabsContainer');
+        container.innerHTML = '';
+
+        sessions.forEach(session => {
+            const displayName = session.config.prideName.trim() !== '' ? session.config.prideName : `Template #${session.templateNum}`;
+            const isActive = session.sessionId === activeSessionId ? 'active' : '';
+            
+            container.innerHTML += `
+                <div class="workspace-tab ${isActive}" onclick="switchTab('${session.sessionId}')" title="${escapeHtml(displayName)}">
+                    <span class="tab-title-text">${escapeHtml(displayName)}</span>
+                    <button class="tab-close-btn" onclick="deleteTab('${session.sessionId}', event)" title="Close Template">✕</button>
+                </div>
+            `;
+        });
+
+        // Add the "+" Tab
+        container.innerHTML += `<div class="workspace-tab-add" onclick="addNewTab()" title="New Template">＋</div>`;
+    }
+
+    function saveStateToLocalStorage() {
+        saveCurrentUIIntoSession();
+        // Deep copy to handle Set to Array conversion for JSON stringify
+        const safeSessions = sessions.map(s => ({
+            ...s,
+            selectedIdsArray: Array.from(s.selectedIds)
+        }));
+        localStorage.setItem('learningPlanMatrixSave', JSON.stringify(safeSessions));
+    }
+
+
+    /* =====================================================================
+       WORKSPACE CORE FUNCTIONS
+       ===================================================================== */
+
+    // --- Template Import Subroutine ---
+    function applySelectedTemplate() {
+        const blueprintTrackKey = document.getElementById('templateProductDropdown').value;
+        if (!blueprintTrackKey) return;
+
+        const rawCurriculumSourceBlock = TEMPLATE_DATABASE[blueprintTrackKey] || [];
+        
+        // Auto-map product title
+        document.getElementById('metaProduct').value = TEMPLATE_NAMES[blueprintTrackKey] || '';
+
+        rawCurriculumSourceBlock.forEach(cells => {
+            const isRowLiveType = cells[1] === "Live Session";
+            const rowType = cells[1];
+            // Auto-populate logic on import
+            const resolvedInstructor = (rowType === "eLearning" || rowType === "Video") ? "Self-led" : cells[2];
+            
+            workspaceDataset.push({
+                id: generateId(),
+                title: cells[0], type: rowType, instructor: resolvedInstructor,
+                liveSessionDate: isRowLiveType ? '' : (cells[3] || ''), 
+                startTime: cells[4] || '', duration: cells[5] || '',
+                dueDate: cells[6] || '', eventStatus: '', locatorNumber: '',
+                additionalNotes: '', sessionTimezone: '', targetDateTime: '', lpOwnerNotes: ''
+            });
+        });
+
+        runGlobalRecalculationEngine();
+    }
+
+    // Utility to strip newlines and tabs from a single field to prevent breaking the TSV structure during copy
+    function sanitizeForTSV(str) {
+        if (!str) return '';
+        return str.toString().replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ''); 
+    }
+
+    // --- Bulk Action Logic ---
+    function updateBulkActionBar() {
+        const bar = document.getElementById('bulkActionBar');
+        const countSpan = document.getElementById('bulkActionCount');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        
+        if (selectedRowIds.size > 0) {
+            countSpan.textContent = selectedRowIds.size;
+            bar.classList.add('active');
+        } else {
+            bar.classList.remove('active');
+        }
+        
+        selectAllCheckbox.checked = workspaceDataset.length > 0 && selectedRowIds.size === workspaceDataset.length;
+    }
+
+    function executeBulkAction(actionType) {
+        if (actionType === 'copy') {
+            const rowsToCopy = workspaceDataset.filter(row => selectedRowIds.has(row.id));
+            
+            // Map the rows strictly to the column layout expected by the paste listener
+            const tsvData = rowsToCopy.map(row => {
+                return [
+                    sanitizeForTSV(row.title),
+                    sanitizeForTSV(row.type),
+                    sanitizeForTSV(row.instructor),
+                    sanitizeForTSV(row.liveSessionDate),
+                    sanitizeForTSV(row.startTime),
+                    sanitizeForTSV(row.duration),
+                    sanitizeForTSV(row.dueDate),
+                    sanitizeForTSV(row.eventStatus),
+                    sanitizeForTSV(row.locatorNumber),
+                    sanitizeForTSV(row.additionalNotes),
+                    sanitizeForTSV(row.lpOwnerNotes)
+                ].join('\t');
+            }).join('\n');
+
+            navigator.clipboard.writeText(tsvData).then(() => {
+                const btn = document.getElementById('copySelectedBtn');
+                const originalText = btn.textContent;
+                const originalBg = btn.style.background;
+                
+                btn.textContent = '✓ Copied!';
+                btn.style.background = 'var(--success-color)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = originalBg;
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy to clipboard', err);
+                showCustomModal("Clipboard access denied. Please allow clipboard permissions in your browser.", true);
+            });
+            
+            return; // We do not clear the selection after copying
+        }
+
+        const finalizeBulkAction = () => {
+            selectedRowIds.clear();
+            updateBulkActionBar();
+            runGlobalRecalculationEngine();
+        };
+
+        if (actionType === 'delete') {
+            showCustomModal(`Are you sure you want to permanently delete ${selectedRowIds.size} selected row(s)?`, false, () => {
+                workspaceDataset = workspaceDataset.filter(row => !selectedRowIds.has(row.id));
+                finalizeBulkAction();
+            });
+        } else if (actionType === 'keep') {
+            showCustomModal(`Are you sure you want to keep ONLY the ${selectedRowIds.size} selected row(s) and delete everything else?`, false, () => {
+                workspaceDataset = workspaceDataset.filter(row => selectedRowIds.has(row.id));
+                finalizeBulkAction();
+            });
+        }
+    }
+
+    // --- Summary & Analytics Logic ---
+    function parseDurationToMinutes(str) {
+        if (!str) return 0;
+        let totalMins = 0;
+        // Looking for numbers associated with hours
+        const hourMatch = str.match(/(\d*\.?\d+)\s*(?:h|hr|hrs|hour|hours)/i);
+        // Looking for numbers associated with minutes
+        const minMatch = str.match(/(\d*\.?\d+)\s*(?:m|min|mins|minute|minutes)/i);
+        
+        if (hourMatch) totalMins += parseFloat(hourMatch[1]) * 60;
+        if (minMatch) totalMins += parseFloat(minMatch[1]);
+        
+        return isNaN(totalMins) ? 0 : totalMins;
+    }
+
+    function calculateBusinessDays(startDateObj, endDateObj) {
+        if (!startDateObj || isNaN(startDateObj.getTime()) || !endDateObj || isNaN(endDateObj.getTime())) return 0;
+        if (endDateObj < startDateObj) return 0;
+
+        let count = 0;
+        let curDate = new Date(startDateObj.getTime());
+        
+        while (curDate <= endDateObj) {
+            const dayOfWeek = curDate.getDay();
+            // 0 is Sunday, 6 is Saturday
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) { count++; }
+            curDate.setDate(curDate.getDate() + 1);
+        }
+        return count;
+    }
+
+    function updateSummaryBlock() {
+        const panel = document.getElementById('summaryPanel');
+        if (!panel) return;
+        
+        let typeCounts = {
+            eLearning: 0,
+            video: 0,
+            liveSession: 0,
+            quiz: 0,
+            material: 0,
+            external: 0,
+            curriculum: 0
+        };
+
+        let totalDurationMins = 0;
+        let maxDateTimestamp = 0;
+
+        workspaceDataset.forEach(row => {
+            // Tally Types
+            if (row.type === 'eLearning') typeCounts.eLearning++;
+            else if (row.type === 'Video') typeCounts.video++;
+            else if (row.type === 'Live Session') typeCounts.liveSession++;
+            else if (row.type === 'Quiz') typeCounts.quiz++;
+            else if (row.type === 'Material') typeCounts.material++;
+            else if (row.type === 'Curriculum') typeCounts.curriculum++;
+            else if (row.type === 'External Learning (no CSOD assignment)') typeCounts.external++;
+
+            // Accumulate Duration
+            totalDurationMins += parseDurationToMinutes(row.duration);
+
+            // Find Max Date
+            if (row.liveSessionDate) {
+                const ts = new Date(row.liveSessionDate).getTime();
+                if (!isNaN(ts) && ts > maxDateTimestamp) maxDateTimestamp = ts;
+            }
+            if (row.dueDate) {
+                const ts = new Date(row.dueDate).getTime();
+                if (!isNaN(ts) && ts > maxDateTimestamp) maxDateTimestamp = ts;
+            }
+        });
+
+        // Calculate Learning Period
+        const startDateStr = document.getElementById('metaStartDate').value;
+        let periodDisplay = "N/A";
+        
+        if (startDateStr && maxDateTimestamp > 0) {
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(maxDateTimestamp);
+            const bizDays = calculateBusinessDays(startDate, endDate);
+            periodDisplay = `${bizDays} Day(s)`;
+        }
+
+        // Format Total Duration
+        const hours = Math.floor(totalDurationMins / 60);
+        const mins = Math.floor(totalDurationMins % 60);
+        let timeDisplay = "";
+        if (hours > 0) timeDisplay += `${hours}h `;
+        if (mins > 0 || hours === 0) timeDisplay += `${mins}m`;
+        if (timeDisplay === "") timeDisplay = "0m";
+
+        panel.innerHTML = `
+            <div class="summary-row"><span>eLearning Modules</span> <span class="summary-val">${typeCounts.eLearning}</span></div>
+            <div class="summary-row"><span>Video Modules</span> <span class="summary-val">${typeCounts.video}</span></div>
+            <div class="summary-row"><span>Live Sessions</span> <span class="summary-val">${typeCounts.liveSession}</span></div>
+            <div class="summary-row"><span>Quizzes / Materials</span> <span class="summary-val">${typeCounts.quiz + typeCounts.material}</span></div>
+            <div class="summary-row"><span>External / Curriculums</span> <span class="summary-val">${typeCounts.external + typeCounts.curriculum}</span></div>
+            <div style="height: 1px; background: var(--border-color); margin: 6px 0;"></div>
+            <div class="summary-row"><span>Learning Plan Period</span> <span class="summary-val">${periodDisplay}</span></div>
+            <div class="summary-row"><span>Total Duration</span> <span class="summary-val total-time">${timeDisplay}</span></div>
+        `;
+    }
+
+    // --- Floating Calendar Widget Logic ---
+    function initCalendar() {
+        document.getElementById('prevMonthBtn').addEventListener('click', () => changeMonth(-1));
+        document.getElementById('nextMonthBtn').addEventListener('click', () => changeMonth(1));
+        renderCalendar();
+        setupCalendarDrag();
+    }
+
+    function toggleCalendarWidget(e) {
+        if(e) e.stopPropagation();
+        const cal = document.getElementById('floatingCalendar');
+        const hint = document.getElementById('calendarHint');
+        
+        if (cal.style.display === 'flex') {
+            cal.style.display = 'none';
+        } else {
+            cal.style.display = 'flex';
+            
+            // Auto-position dynamically next to the actions block on initialization
+            if (!cal.dataset.moved) {
+                const actionsRect = document.getElementById('actionsPanel').getBoundingClientRect();
+                cal.style.bottom = 'auto';
+                cal.style.right = 'auto';
+                cal.style.left = (actionsRect.right + 24) + 'px';
+                cal.style.top = actionsRect.top + 'px';
+                
+                // Show structural hint UI overlay
+                hint.style.display = 'block';
+                void hint.offsetWidth; // Force internal CSS reflow 
+                hint.style.opacity = '1';
+                
+                setTimeout(() => {
+                    hint.style.opacity = '0';
+                    setTimeout(() => hint.style.display = 'none', 500);
+                }, 5000);
+            }
+        }
+    }
+
+    function minimizeCalendar(e) {
+        if(e) e.stopPropagation();
+        document.getElementById('floatingCalendar').classList.toggle('minimized');
+    }
+
+    function setupCalendarDrag() {
+        const calendarEl = document.getElementById('floatingCalendar');
+        const dragHandle = document.getElementById('calendarDragHandle');
+        let isDraggingCalendar = false;
+        let calOffsetX, calOffsetY;
+
+        dragHandle.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            
+            isDraggingCalendar = true;
+            calendarEl.dataset.moved = 'true';
+
+            const rect = calendarEl.getBoundingClientRect();
+            calOffsetX = e.clientX - rect.left;
+            calOffsetY = e.clientY - rect.top;
+            
+            calendarEl.style.bottom = 'auto';
+            calendarEl.style.right = 'auto';
+            calendarEl.style.left = rect.left + 'px';
+            calendarEl.style.top = rect.top + 'px';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingCalendar) return;
+            e.preventDefault();
+            calendarEl.style.left = (e.clientX - calOffsetX) + 'px';
+            calendarEl.style.top = (e.clientY - calOffsetY) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isDraggingCalendar = false; });
+    }
+
+    function changeMonth(direction) {
+        calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
+        renderCalendar();
+    }
+    
+    function generateCalendarSessionMap() {
+        calendarSessionMap = {};
+        workspaceDataset.forEach(row => {
+            const canPlotOnCalendar = row.type === 'Live Session' || row.type === 'External Learning (no CSOD assignment)';
+            if (canPlotOnCalendar && row.liveSessionDate) {
+                if (!calendarSessionMap[row.liveSessionDate]) {
+                    calendarSessionMap[row.liveSessionDate] = [];
+                }
+                calendarSessionMap[row.liveSessionDate].push(row);
+            }
+        });
+    }
+
+    function showCalendarTooltip(targetNode, sessions) {
+        const tooltip = document.getElementById('calendarSingletonTooltip');
+        if (!tooltip) return;
+        
+        let content = `<strong>Scheduled Events (${sessions.length})</strong>\n\n`;
+        sessions.forEach(s => {
+            const timeStr = s.startTime ? s.startTime : 'TBD';
+            content += `• ${timeStr} - ${escapeHtml(s.title || 'Untitled')}\n`;
+        });
+        
+        tooltip.innerHTML = content;
+        tooltip.style.display = 'block';
+        
+        const rect = targetNode.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2)}px`;
+        tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 8}px`;
+    }
+
+    function hideCalendarTooltip() {
+        const tooltip = document.getElementById('calendarSingletonTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+
+    function renderCalendar() {
+        generateCalendarSessionMap();
+        
+        const grid = document.getElementById('calendarGrid');
+        const monthYearLabel = document.getElementById('calendarMonthYear');
+        
+        const dayNamesCount = 7;
+        while (grid.children.length > dayNamesCount) { grid.removeChild(grid.lastChild); }
+
+        const year = calendarCurrentDate.getFullYear();
+        const month = calendarCurrentDate.getMonth();
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const today = new Date();
+        const isCurrentMonthYear = today.getMonth() === month && today.getFullYear() === year;
+        
+        const globalStartDate = document.getElementById('metaStartDate').value;
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'calendar-day empty';
+            grid.appendChild(emptyDiv);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            dayDiv.textContent = day;
+            
+            if (isCurrentMonthYear && day === today.getDate()) {
+                dayDiv.classList.add('today');
+                dayDiv.title = "Today";
+            }
+            
+            const mapKeyStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            if (calendarSessionMap[mapKeyStr]) {
+                dayDiv.classList.add('has-session');
+                dayDiv.addEventListener('mouseenter', (e) => showCalendarTooltip(e.target, calendarSessionMap[mapKeyStr]));
+                dayDiv.addEventListener('mouseleave', hideCalendarTooltip);
+            }
+            
+            if (mapKeyStr === globalStartDate) {
+                dayDiv.classList.add('start-date');
+                dayDiv.title = dayDiv.title ? dayDiv.title + " (Start Date)" : "Start Date";
+            }
+            
+            grid.appendChild(dayDiv);
+        }
+    }
+
+    function populateSelectElement(id, optionArray) {
+        const dropdown = document.getElementById(id);
+        dropdown.innerHTML = '<option value="">-- Select One --</option>';
+        optionArray.forEach(option => {
+            const optElement = document.createElement('option');
+            optElement.value = option;
+            optElement.textContent = option;
+            dropdown.appendChild(optElement);
+        });
+    }
+
+    function setupSortingHeaders() {
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.addEventListener('click', () => sortTableByFieldColumn(th.getAttribute('data-sort')));
+        });
+        
+        document.getElementById('selectAllCheckbox').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                workspaceDataset.forEach(row => selectedRowIds.add(row.id));
+            } else {
+                selectedRowIds.clear();
+            }
+            updateBulkActionBar();
+            renderWorkspaceView();
+        });
+    }
+
+    function sortTableByFieldColumn(fieldKey) {
+        if (workspaceDataset.length <= 1) return;
+
+        if (activeSortColumnKey === fieldKey) {
+            isCurrentSortDirectionAscending = !isCurrentSortDirectionAscending;
+        } else {
+            activeSortColumnKey = fieldKey;
+            isCurrentSortDirectionAscending = true;
+        }
+
+        workspaceDataset.sort((rowA, rowB) => {
+            let valueA = (rowA[fieldKey] || '').toString().toLowerCase();
+            let valueB = (rowB[fieldKey] || '').toString().toLowerCase();
+
+            if (valueA === '') return 1; 
+            if (valueB === '') return -1;
+            if (valueA < valueB) return isCurrentSortDirectionAscending ? -1 : 1;
+            if (valueA > valueB) return isCurrentSortDirectionAscending ? 1 : -1;
+            return 0;
+        });
+
+        updateSortIndicatorGlyphs(fieldKey);
+        renderWorkspaceView();
+    }
+
+    function updateSortIndicatorGlyphs(activeFieldKey) {
+        document.querySelectorAll('.sort-indicator').forEach(el => el.textContent = '↕');
+        const targetIndicator = document.getElementById(`sort_${activeFieldKey}`);
+        if (targetIndicator) targetIndicator.textContent = isCurrentSortDirectionAscending ? '▲' : '▼';
+    }
+
+    document.addEventListener('paste', (e) => {
+        if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
+            // Handle pasting specifically into the content editable notes cell
+            if (document.activeElement.classList.contains('content-editable-cell')) {
+                e.preventDefault();
+                let text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                if (document.queryCommandSupported('insertText')) {
+                    document.execCommand('insertText', false, text);
+                }
+            }
+            return;
+        }
+
+        e.preventDefault();
+        const clipboardText = (e.clipboardData || window.clipboardData).getData('text');
+        if (!clipboardText) return;
+
+        clipboardText.split(/\r?\n/).forEach(line => {
+            if (!line.trim()) return;
+            const cells = line.split('\t');
+            const type = verifyPastedType(cells[1]);
+            const isLive = type === "Live Session";
+            const canHaveTime = type === "Live Session" || type === "External Learning (no CSOD assignment)";
+            
+            // Auto-populate Logic
+            const resolvedInstructor = (type === "eLearning" || type === "Video") ? "Self-led" : (cells[2] || '');
+            
+            workspaceDataset.push({
+                id: generateId(), title: cells[0] || '', type: type, instructor: resolvedInstructor,
+                liveSessionDate: canHaveTime ? formatIncomingDateString(cells[3]) : '', 
+                startTime: normalizeIncomingTimeString(cells[4]),
+                duration: cells[5] || '', 
+                dueDate: isLive ? '' : formatIncomingDateString(cells[6]), 
+                eventStatus: cells[7] || '', locatorNumber: cells[8] || '', 
+                additionalNotes: cells[9] || '', lpOwnerNotes: cells[10] || '', sessionTimezone: '', targetDateTime: ''
+            });
+        });
+        runGlobalRecalculationEngine();
+    });
+
+    function verifyPastedType(val) {
+        if (!val) return '';
+        const match = appLookups.courseTypes.find(t => t.toLowerCase() === val.trim().toLowerCase());
+        return match || '';
+    }
+
+    function insertAdHocAtTop() { workspaceDataset.unshift(createEmptyRowModel()); runGlobalRecalculationEngine(); }
+    function insertAdHocAtTargetIndex(targetIndex) { workspaceDataset.splice(targetIndex, 0, createEmptyRowModel()); runGlobalRecalculationEngine(); }
+
+    function createEmptyRowModel() {
+        return {
+            id: generateId(), title: '', type: '', instructor: '', liveSessionDate: '', startTime: '',
+            duration: '', dueDate: '', eventStatus: '', locatorNumber: '', additionalNotes: '',
+            sessionTimezone: '', targetDateTime: '', lpOwnerNotes: ''
+        };
+    }
+
+    function executeChronologicalSort() {
+        if (workspaceDataset.length <= 1) return;
+        workspaceDataset.sort((rowA, rowB) => {
+            const timeHHMM_A = (appLookups.startTimes.find(t => t.display === rowA.startTime) || {}).value || "00:00";
+            const timeHHMM_B = (appLookups.startTimes.find(t => t.display === rowB.startTime) || {}).value || "00:00";
+
+            const liveTimestampA = rowA.liveSessionDate ? new Date(`${rowA.liveSessionDate}T${timeHHMM_A}:00`).getTime() : Infinity;
+            const liveTimestampB = rowB.liveSessionDate ? new Date(`${rowB.liveSessionDate}T${timeHHMM_B}:00`).getTime() : Infinity;
+            const dueTimestampA = rowA.dueDate ? new Date(`${rowA.dueDate}T${timeHHMM_A}:00`).getTime() : Infinity;
+            const dueTimestampB = rowB.dueDate ? new Date(`${rowB.dueDate}T${timeHHMM_B}:00`).getTime() : Infinity;
+
+            const virtualColZ_A = Math.min(liveTimestampA, dueTimestampA);
+            const virtualColZ_B = Math.min(liveTimestampB, dueTimestampB);
+
+            if (virtualColZ_A !== virtualColZ_B) return virtualColZ_A - virtualColZ_B;
+            return (rowA.title || '').localeCompare(rowB.title || '');
+        });
+        
+        activeSortColumnKey = '';
+        document.querySelectorAll('.sort-indicator').forEach(el => el.textContent = '↕');
+        renderWorkspaceView();
+    }
+
+    function formatIncomingDateString(val) {
+        if (!val || val.trim().toLowerCase() === 'n/a' || val.trim() === '') return '';
+        const timestamp = Date.parse(val);
+        if (isNaN(timestamp)) return '';
+        return new Date(timestamp).toISOString().split('T')[0];
+    }
+
+    function normalizeIncomingTimeString(val) {
+        if (!val || val.trim() === '') return '';
+        const match = appLookups.startTimes.find(t => t.display.toLowerCase() === val.trim().toLowerCase());
+        return match ? match.display : '';
+    }
+
+    function getStyleRulesForCourseType(typeVal) {
+        switch (typeVal) {
+            case "Live Session": return { bg: "#3079c3", text: "#ffffff", darkArrow: false };
+            case "Curriculum": return { bg: "#00b188", text: "#ffffff", darkArrow: false };
+            case "Quiz": return { bg: "#e87331", text: "#ffffff", darkArrow: false };
+            case "External Learning (no CSOD assignment)": return { bg: "#d0d0d0", text: "#1e293b", darkArrow: true };
+            case "": return { bg: "#ffffff", text: "#1e293b", darkArrow: true };
+            default: return { bg: "#bbd437", text: "#1e293b", darkArrow: true };
+        }
+    }
+
+    function calculateTimezoneProjections() {
+        const b5Val = document.getElementById('paramB5').value;
+        const b6Val = document.getElementById('paramB6').value;
+        const b5Obj = appLookups.cornerstoneTimezones.find(z => z.label === b5Val);
+        const b6Obj = appLookups.newHireTimezones.find(z => z.label === b6Val);
+
+        workspaceDataset.forEach(row => {
+            const canHaveTime = row.type === "Live Session" || row.type === "External Learning (no CSOD assignment)";
+            row.sessionTimezone = canHaveTime ? b5Val : "";
+            if (!row.liveSessionDate || !row.startTime || !row.sessionTimezone || !b6Val) { 
+                row.targetDateTime = ""; 
+                return; 
+            }
+
+            const targetTimeNode = appLookups.startTimes.find(t => t.display === row.startTime);
+            if (!targetTimeNode || !b5Obj || !b6Obj) { 
+                row.targetDateTime = ""; 
+                return; 
+            }
+
+            try {
+                // Warning: Static offset logic is subject to DST failure. 
+                const baseDateTime = new Date(`${row.liveSessionDate}T${targetTimeNode.value}:00`);
+                if (isNaN(baseDateTime.getTime())) throw new Error();
+                const netMinutesCorrection = b6Obj.offset - b5Obj.offset;
+                const evaluatedTimestamp = baseDateTime.getTime() + (netMinutesCorrection * 60 * 1000);
+                
+                row.targetDateTime = new Date(evaluatedTimestamp).toLocaleString('en-AU', {
+                    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true
+                });
+            } catch (e) { row.targetDateTime = ""; }
+        });
+    }
+
+    // Modern Rich-Text and Markdown Link Parser
+    function parseRichText(text) {
+        if (!text) return '';
+        let safeText = escapeHtml(text);
+        
+        // 1. Parse Markdown format links: [Display Text](http://url.com)
+        const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g;
+        safeText = safeText.replace(mdLinkRegex, function(match, display, url) {
+            return `<a href="${url}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${display}</a>`;
+        });
+
+        // 2. Parse naked raw URLs that aren't already part of an HTML link tag
+        const parts = safeText.split(/(<a\b[^>]*>.*?<\/a>)/gi);
+        for (let i = 0; i < parts.length; i++) {
+            if (!parts[i].toLowerCase().startsWith('<a')) {
+                parts[i] = parts[i].replace(/(^|\s)(https?:\/\/[^\s]+)/g, function(match, space, url) {
+                    return `${space}<a href="${url}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${url}</a>`;
+                });
+            }
+        }
+        return parts.join('');
+    }
+
+    // Pre-processing parser specifically tailored for exporting clean values and mapping link objects to XLSX output 
+    function processTextForExcel(rawText) {
+        if (!rawText) return '';
+        let safeText = String(rawText);
+        let embeddedUrl = null;
+        
+        // Isolate primary URL if Markdown syntax is applied 
+        const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/;
+        const mdMatch = safeText.match(mdLinkRegex);
+        
+        if (mdMatch) {
+            safeText = safeText.replace(mdLinkRegex, '$1'); 
+            embeddedUrl = mdMatch[2];
+        } else {
+            // Isolate naked raw URL 
+            const rawUrlRegex = /(https?:\/\/[^\s]+)/;
+            const rawMatch = safeText.match(rawUrlRegex);
+            if (rawMatch) {
+                embeddedUrl = rawMatch[1];
+            }
+        }
+
+        // Global stripping rule to enforce clean string values across the entire string length 
+        safeText = safeText.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '$1');
+
+        if (embeddedUrl) {
+            // Structuring data for the SheetJS interpretation engine utilizing 'l' (link attributes)
+            return { t: 's', v: safeText, l: { Target: embeddedUrl } };
+        }
+        
+        return safeText;
+    }
+
+    // --- Template Generation Action ---
+    function generateAndDownloadTemplateXLSX() {
+        let filename = prompt("Enter a filename for your template:", "My_Custom_Template");
+        if (filename === null) return; // Cancelled
+        if (filename.trim() === "") filename = "Template";
+
+        if (!filename.toLowerCase().endsWith('.xlsx')) {
+            filename += '.xlsx';
+        }
+
+        const sheetDataMatrix = [
+            ["Pride Member Name:", ""], ["Role Title:", ""], ["Start Date:", ""], ["Orientation:", ""],
+            ["Time zone in Cornerstone:", ""], ["Time zone of new hire's location:", ""],
+            ["Region:", ""], ["Product:", ""], ["Learning Plan Owner:", ""], [], [], [],
+            ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"]
+        ];
+
+        workspaceDataset.forEach(row => {
+            let textTypeIdentifier = row.type || 'Unassigned';
+            sheetDataMatrix.push([
+                row.title || '', textTypeIdentifier, row.instructor || '', row.liveSessionDate || '',
+                row.startTime || '', row.duration || '', row.dueDate || '', row.eventStatus || '',
+                row.locatorNumber || '', row.sessionTimezone || '', "", 
+                processTextForExcel(row.additionalNotes), 
+                processTextForExcel(row.lpOwnerNotes)
+            ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetDataMatrix);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+        worksheet['!cols'] = [{ wch: 32 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 24 }, { wch: 24 }, { wch: 32 }, { wch: 32 }];
+
+        XLSX.writeFile(workbook, filename);
+    }
+
+    function runGlobalRecalculationEngine() {
+        // Swap updated active pointers back to session core on every recalculation
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        if (activeSession) {
+            activeSession.dataset = workspaceDataset;
+        }
+
+        calculateTimezoneProjections();
+        updateBulkActionBar();
+        updateSummaryBlock(); // Regenerate Summary Metrics
+        renderWorkspaceView();
+        renderCalendar(); // Sync Calendar visual state with current dataset
+        
+        // Save state locally
+        saveStateToLocalStorage();
+    }
+
+    function renderWorkspaceView() {
+        const tbody = document.getElementById('matrixBody');
+        const emptyState = document.getElementById('emptyState');
+        const masterStartDateStr = document.getElementById('metaStartDate').value;
+        
+        tbody.innerHTML = '';
+
+        if (workspaceDataset.length === 0) { 
+            emptyState.style.display = 'block'; 
+            
+            // Sync top scrollbar dummy width
+            const table = document.getElementById('matrixTable');
+            document.getElementById('topScrollDummy').style.width = table.offsetWidth + 'px';
+            return; 
+        } 
+        emptyState.style.display = 'none';
+
+        workspaceDataset.forEach((row, idx) => {
+            const isSelected = selectedRowIds.has(row.id);
+            const tr = document.createElement('tr'); 
+            tr.className = isSelected ? "matrix-row row-selected" : "matrix-row"; 
+            tr.setAttribute('draggable', 'true'); 
+            tr.setAttribute('data-index', idx);
+            tr.setAttribute('data-id', row.id);
+            
+            const isLive = row.type === "Live Session";
+            const isExternal = row.type === "External Learning (no CSOD assignment)";
+            const canHaveTime = isLive || isExternal;
+            
+            const fieldsDisabledClass = isLive ? '' : 'cell-disabled'; // Applies to CSOD specific fields (Status, Locator)
+            
+            const dateInputClass = canHaveTime ? (row.liveSessionDate ? '' : (isLive ? 'cell-required-empty' : '')) : (row.type === '' ? '' : 'cell-disabled');
+            const timeInputClass = canHaveTime ? (row.startTime ? '' : (isLive ? 'cell-required-empty' : '')) : (row.type === '' ? '' : 'cell-disabled');
+            const instructorInputClass = isLive ? (row.instructor ? '' : 'cell-required-empty') : '';
+            const durationInputClass = isLive ? (row.duration ? '' : 'cell-required-empty') : '';
+            const dueInputClass = isLive ? 'cell-disabled' : (row.dueDate ? '' : '');
+            
+            const statusInputClass = isLive ? (row.eventStatus ? (row.eventStatus === "Needs to be created in Cornerstone" ? 'cell-warning' : '') : 'cell-required-empty') : 'cell-disabled';
+            const locatorInputClass = isLive ? (row.eventStatus === "Exists in Cornerstone" ? (row.locatorNumber ? '' : 'cell-required-empty') : '') : 'cell-disabled';
+            const targetCellClass = row.targetDateTime ? 'cell-valid' : '';
+            
+            let showTimelineWarningFlag = false;
+            if (canHaveTime && row.liveSessionDate && masterStartDateStr) {
+                if (new Date(row.liveSessionDate).getTime() < new Date(masterStartDateStr).getTime()) { showTimelineWarningFlag = true; }
+            }
+            const dateContainerClass = showTimelineWarningFlag ? 'validation-warning-container' : '';
+
+            const typeStyle = getStyleRulesForCourseType(row.type);
+            const selectArrowModifier = typeStyle.darkArrow ? 'table-input-darktext' : '';
+
+            tr.innerHTML = `
+                <td class="col-select"><input type="checkbox" class="row-select-checkbox" data-id="${row.id}" ${isSelected ? 'checked' : ''}></td>
+                <td class="col-drag">
+                    <div class="drag-cell-container">
+                        <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                        <div class="row-hover-actions">
+                            <button class="row-action-btn" data-action="duplicate" data-index="${idx}" title="Duplicate Row">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                            <button class="row-action-btn" data-action="insert-below" data-index="${idx}" title="Insert Row Below">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <button class="row-action-btn danger-action" data-action="delete" data-index="${idx}" title="Delete Row">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </td>
+                <td class="col-title"><input type="text" class="table-input" value="${escapeHtml(row.title)}" data-index="${idx}" data-field="title" placeholder="Enter Title..."></td>
+                <td class="col-type">
+                    <select class="table-input ${selectArrowModifier}" data-index="${idx}" data-field="type" style="background-color: ${typeStyle.bg}; color: ${typeStyle.text}; font-weight: 600;">
+                        <option value="" ${row.type === '' ? 'selected' : ''}>-- Select Type --</option>
+                        ${appLookups.courseTypes.map(type => `<option value="${type}" ${row.type === type ? 'selected' : ''} style="background-color: #ffffff; color: var(--text-primary);">${type}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="col-instructor"><input type="text" class="table-input ${instructorInputClass}" value="${escapeHtml(row.instructor)}" data-index="${idx}" data-field="instructor" placeholder="Instructor..."></td>
+                <td class="col-date"><div class="${dateContainerClass}"><input type="date" class="table-input ${dateInputClass}" value="${row.liveSessionDate}" data-index="${idx}" data-field="liveSessionDate" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}></div></td>
+                <td class="col-time">
+                    <select class="table-input ${timeInputClass}" data-index="${idx}" data-field="startTime" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}>
+                        <option value="">--:--</option>
+                        ${appLookups.startTimes.map(t => `<option value="${t.display}" ${row.startTime === t.display ? 'selected' : ''}>${t.display}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="col-duration"><input type="text" class="table-input ${durationInputClass}" value="${escapeHtml(row.duration)}" data-index="${idx}" data-field="duration" placeholder="0h"></td>
+                <td class="col-due"><input type="date" class="table-input ${dueInputClass}" value="${isLive ? '' : row.dueDate}" data-index="${idx}" data-field="dueDate" ${isLive ? 'disabled' : ''}></td>
+                <td class="col-status">
+                    <select class="table-input ${statusInputClass} ${fieldsDisabledClass}" data-index="${idx}" data-field="eventStatus" ${isLive ? '' : 'disabled'}>
+                        <option value="" ${row.eventStatus === '' ? 'selected' : ''}>-- Select One --</option>
+                        ${appLookups.eventStatus.map(status => `<option value="${status}" ${row.eventStatus === status ? 'selected' : ''} style="background-color: #ffffff; color: var(--text-primary);">${status}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="col-locator"><input type="text" class="table-input ${locatorInputClass} ${fieldsDisabledClass}" value="${escapeHtml(row.locatorNumber)}" data-index="${idx}" data-field="locatorNumber" placeholder="ID..." ${isLive ? '' : 'disabled'}></td>
+                <td class="col-notes"><div contenteditable="true" class="table-input content-editable-cell" data-index="${idx}" data-field="additionalNotes" data-placeholder="Add Notes...">${parseRichText(row.additionalNotes)}</div></td>
+                <td class="col-tz"><span class="read-only-cell">${escapeHtml(row.sessionTimezone)}</span></td>
+                <td class="col-target"><span class="read-only-cell ${targetCellClass}" style="font-weight:600;">${escapeHtml(row.targetDateTime)}</span></td>
+                <td class="col-lp-notes"><div contenteditable="true" class="table-input content-editable-cell" data-index="${idx}" data-field="lpOwnerNotes" data-placeholder="Add Notes...">${parseRichText(row.lpOwnerNotes)}</div></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Sync top scrollbar dummy width
+        const table = document.getElementById('matrixTable');
+        document.getElementById('topScrollDummy').style.width = table.offsetWidth + 'px';
+    }
+
+    function setupTableDelegation() {
+        const tbody = document.getElementById('matrixBody');
+        
+        tbody.addEventListener('input', (e) => {
+            if (!e.target.classList.contains('table-input')) return;
+            
+            const index = e.target.getAttribute('data-index');
+            const field = e.target.getAttribute('data-field');
+            const record = workspaceDataset[index];
+            if (!record) return;
+
+            // Handle content editable DIV vs standard inputs
+            record[field] = e.target.value !== undefined ? e.target.value : e.target.innerText;
+            
+            if (e.target.value !== undefined && e.target.value.trim() !== '') e.target.classList.remove('cell-required-empty');
+            else if (e.target.innerText && e.target.innerText.trim() !== '') e.target.classList.remove('cell-required-empty');
+
+            if (['liveSessionDate', 'startTime', 'dueDate'].includes(field)) {
+                calculateTimezoneProjections();
+                
+                const tr = e.target.closest('.matrix-row');
+                const targetSpan = tr.querySelector('.col-target span.read-only-cell');
+                
+                if (targetSpan) {
+                    targetSpan.textContent = record.targetDateTime || '';
+                    if (record.targetDateTime) targetSpan.classList.add('cell-valid');
+                    else targetSpan.classList.remove('cell-valid');
+                }
+                
+                const dateDiv = tr.querySelector('.col-date div');
+                const masterStartDateStr = document.getElementById('metaStartDate').value;
+                let showWarning = false;
+                const canHaveTime = record.type === 'Live Session' || record.type === 'External Learning (no CSOD assignment)';
+                
+                if (canHaveTime && record.liveSessionDate && masterStartDateStr) {
+                    if (new Date(record.liveSessionDate).getTime() < new Date(masterStartDateStr).getTime()) {
+                        showWarning = true;
+                    }
+                }
+                if (dateDiv) {
+                    if (showWarning) dateDiv.classList.add('validation-warning-container');
+                    else dateDiv.classList.remove('validation-warning-container');
+                }
+                
+                renderCalendar();
+            }
+        });
+
+        // Focus & Blur toggling to handle rich text/markdown
+        tbody.addEventListener('focusin', (e) => {
+            if (e.target.classList.contains('content-editable-cell')) {
+                const index = e.target.getAttribute('data-index');
+                const field = e.target.getAttribute('data-field');
+                // Revert to raw text (showing markdown) for clean editing
+                e.target.innerText = workspaceDataset[index][field] || '';
+            }
+        });
+
+        tbody.addEventListener('focusout', (e) => {
+            if (e.target.classList.contains('content-editable-cell')) {
+                const index = e.target.getAttribute('data-index');
+                const field = e.target.getAttribute('data-field');
+                // Save any raw text typed to the dataset immediately
+                workspaceDataset[index][field] = e.target.innerText;
+                // Render the parsed HTML link display
+                e.target.innerHTML = parseRichText(workspaceDataset[index][field]);
+            }
+        });
+
+        // Prevent multiline in content editable if necessary
+        tbody.addEventListener('keydown', (e) => {
+            if (e.target.classList.contains('content-editable-cell') && e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+
+        tbody.addEventListener('change', (e) => {
+            if (e.target.classList.contains('row-select-checkbox')) {
+                const id = e.target.getAttribute('data-id');
+                if (e.target.checked) selectedRowIds.add(id);
+                else selectedRowIds.delete(id);
+                
+                const tr = e.target.closest('.matrix-row');
+                if (e.target.checked) tr.classList.add('row-selected');
+                else tr.classList.remove('row-selected');
+                
+                updateBulkActionBar();
+                return;
+            }
+
+            if (!e.target.classList.contains('table-input')) return;
+            
+            const index = e.target.getAttribute('data-index');
+            const field = e.target.getAttribute('data-field');
+            const record = workspaceDataset[index];
+            if (!record) return;
+
+            if (['type', 'eventStatus'].includes(field)) {
+                if (field === 'type') {
+                    const isLive = record.type === 'Live Session';
+                    const isExternal = record.type === 'External Learning (no CSOD assignment)';
+                    const canHaveTime = isLive || isExternal;
+
+                    if (!canHaveTime) { 
+                        record.liveSessionDate = ''; record.startTime = ''; record.sessionTimezone = ''; record.targetDateTime = '';
+                    }
+                    if (!isLive) {
+                        record.eventStatus = ''; record.locatorNumber = ''; 
+                    }
+                    if (isLive) { record.dueDate = ''; }
+                    
+                    // Auto-populate logic on dropdown mutation
+                    if (record.type === 'eLearning' || record.type === 'Video') {
+                        record.instructor = 'Self-led';
+                    } else if (record.instructor === 'Self-led') {
+                        record.instructor = '';
+                    }
+                }
+                
+                const focusField = e.target.getAttribute('data-field');
+                runGlobalRecalculationEngine();
+                
+                const newTarget = document.querySelector(`[data-index="${index}"][data-field="${focusField}"]`);
+                if (newTarget) newTarget.focus();
+            }
+        });
+
+        // Intercept clicking links so they open instead of focusing the cell
+        tbody.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'A' && e.target.closest('.content-editable-cell')) {
+                e.preventDefault(); 
+                window.open(e.target.href, '_blank');
+            }
+        });
+
+        tbody.addEventListener('click', (e) => {
+            const actionBtn = e.target.closest('[data-action]');
+            if (!actionBtn) return;
+            
+            const action = actionBtn.dataset.action;
+            const index = parseInt(actionBtn.dataset.index, 10);
+            const recordId = workspaceDataset[index].id;
+            
+            if (action === 'delete') {
+                showCustomModal("Are you sure you want to delete this row?", false, () => {
+                    workspaceDataset.splice(index, 1);
+                    selectedRowIds.delete(recordId);
+                    runGlobalRecalculationEngine();
+                });
+            } else if (action === 'duplicate') {
+                const clonedRecord = { ...workspaceDataset[index], id: generateId() };
+                workspaceDataset.splice(index + 1, 0, clonedRecord);
+                runGlobalRecalculationEngine();
+            } else if (action === 'insert-below') {
+                workspaceDataset.splice(index + 1, 0, createEmptyRowModel());
+                runGlobalRecalculationEngine();
+            }
+        });
+    }
+
+    function setupViewportDragOverContainer() {
+        const tbody = document.getElementById('matrixBody');
+        
+        tbody.addEventListener('dragstart', (e) => {
+            const row = e.target.closest('.matrix-row');
+            if (row) {
+                dragSourceIndex = parseInt(row.getAttribute('data-index'));
+                row.classList.add('dragging');
+                e.dataTransfer.effectAllowed = "move";
+            }
+        });
+
+        tbody.addEventListener('dragend', (e) => {
+            const row = e.target.closest('.matrix-row');
+            if (row) row.classList.remove('dragging');
+            document.querySelectorAll('.matrix-row').forEach(r => r.classList.remove('drag-over'));
+        });
+
+        tbody.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            e.dataTransfer.dropEffect = "move";
+            const targetRow = e.target.closest('.matrix-row');
+            
+            document.querySelectorAll('.matrix-row').forEach(r => r.classList.remove('drag-over'));
+            if (targetRow && parseInt(targetRow.getAttribute('data-index')) !== dragSourceIndex) {
+                targetRow.classList.add('drag-over');
+            }
+        });
+
+        tbody.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetRow = e.target.closest('.matrix-row');
+            if (!targetRow) return;
+
+            const targetIndex = parseInt(targetRow.getAttribute('data-index'));
+            if (dragSourceIndex === targetIndex || dragSourceIndex === null) return;
+
+            const [movedItem] = workspaceDataset.splice(dragSourceIndex, 1);
+            workspaceDataset.splice(targetIndex, 0, movedItem);
+            
+            runGlobalRecalculationEngine();
+            dragSourceIndex = null;
+        });
+    }
+
+    function clearWorkspace() { 
+        showCustomModal("Are you sure you want to clear all data in this table? This cannot be undone.", false, () => {
+            workspaceDataset = []; 
+            selectedRowIds.clear();
+            
+            document.getElementById('templateProductDropdown').value = '';
+            document.getElementById('templateRoleDropdown').value = '';
+            document.getElementById('metaProduct').value = '';
+            document.getElementById('importTemplateBtn').disabled = true;
+
+            runGlobalRecalculationEngine(); 
+        });
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+    function generateAndDownloadBinaryXLSX() {
+        const pName = document.getElementById('metaPrideName').value || '';
+        const rTitle = document.getElementById('metaRoleTitle').value || '';
+        const sDate = document.getElementById('metaStartDate').value || '';
+        const wave = document.getElementById('paramB4').value || '';
+        const tzCorner = document.getElementById('paramB5').value || '';
+        const tzHire = document.getElementById('paramB6').value || '';
+        const region = document.getElementById('paramB7').value || '';
+        const prod = document.getElementById('metaProduct').value || '';
+        const owner = document.getElementById('metaLPOwner').value || '';
+
+        const sheetDataMatrix = [
+            ["Pride Member Name:", pName], ["Role Title:", rTitle], ["Start Date:", sDate], ["Orientation:", wave],
+            ["Time zone in Cornerstone:", tzCorner], ["Time zone of new hire's location:", tzHire],
+            ["Region:", region], ["Product:", prod], ["Learning Plan Owner:", owner], [], [], [],
+            ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"]
+        ];
+
+        workspaceDataset.forEach(row => {
+            let textTypeIdentifier = row.type || 'Unassigned';
+            
+            // Submitting parsed cell objects to handle underlying target URLs 
+            sheetDataMatrix.push([
+                row.title || '', textTypeIdentifier, row.instructor || '', row.liveSessionDate || '',
+                row.startTime || '', row.duration || '', row.dueDate || '', row.eventStatus || '',
+                row.locatorNumber || '', row.sessionTimezone || '', tzHire, 
+                processTextForExcel(row.additionalNotes), 
+                processTextForExcel(row.lpOwnerNotes)
+            ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetDataMatrix);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Learning Plan");
+        worksheet['!cols'] = [{ wch: 32 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 24 }, { wch: 24 }, { wch: 32 }, { wch: 32 }];
+
+        const finalFilenameOutput = `${(region||'Reg').replace(/[^a-zA-Z0-9]+/g, '_')}${(prod||'Prod').replace(/[^a-zA-Z0-9]/g, '_')}_${(rTitle||'Role').replace(/[^a-zA-Z0-9]/g, '_')}_${(pName||'Name').replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+        XLSX.writeFile(workbook, finalFilenameOutput);
+    }
+
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // raw: false ensures dates are pulled as formatted strings, circumventing serial integer translation
+            const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false}); 
+
+            // Map data extraction explicitly starting from row 14 (index 13) 
+            const startIndex = 13;
+
+            for (let i = startIndex; i < json.length; i++) {
+                const row = json[i];
+                if (!row || row.length === 0) continue;
+                
+                // Exclude arrays evaluated entirely as blank bounds
+                const isEmpty = row.every(cell => !cell || cell.toString().trim() === '');
+                if (isEmpty) continue;
+
+                const rawType = row[1] || '';
+                const type = verifyPastedType(rawType);
+                const isLive = type === "Live Session";
+                const canHaveTime = type === "Live Session" || type === "External Learning (no CSOD assignment)";
+                
+                // Auto-populate Logic
+                let instructor = row[2] || '';
+                if (type === "eLearning" || type === "Video") {
+                    instructor = "Self-led";
+                }
+
+                workspaceDataset.push({
+                    id: generateId(),
+                    title: row[0] || '',
+                    type: type,
+                    instructor: instructor,
+                    liveSessionDate: canHaveTime ? formatIncomingDateString(row[3]) : '', 
+                    startTime: normalizeIncomingTimeString(row[4]),
+                    duration: row[5] || '',
+                    dueDate: isLive ? '' : formatIncomingDateString(row[6]),
+                    eventStatus: '',
+                    locatorNumber: '',
+                    additionalNotes: '',
+                    sessionTimezone: '',
+                    targetDateTime: '',
+                    lpOwnerNotes: ''
+                });
+            }
+            
+            e.target.value = ''; // Reset input to permit repeated imports of identical file payload
+            runGlobalRecalculationEngine();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function generateAndTriggerPrintJob() {
+        const prideName = document.getElementById('metaPrideName').value || '_______________________';
+        const roleTitle = document.getElementById('metaRoleTitle').value || '_______________________';
+        const startDateRaw = document.getElementById('metaStartDate').value;
+        const productVal = document.getElementById('metaProduct').value || '_______________________';
+        const lpOwner = document.getElementById('metaLPOwner').value || '_______________________';
+        const startDateFormatted = startDateRaw ? new Date(startDateRaw).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '_______________________';
+
+        let printHTML = `
+            <div class="page-break-wrapper">
+                <div class="print-cover-page">
+                    <div class="cover-title-brand">Cornerstone Learning Plan</div>
+                    <div class="cover-main-header">Your Learning Plan</div>
+                    <div class="cover-metadata-card">
+                        <div class="cover-meta-row"><div class="cover-meta-label">Name:</div><div class="cover-meta-value">${escapeHtml(prideName)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Role Title:</div><div class="cover-meta-value">${escapeHtml(roleTitle)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Start Date:</div><div class="cover-meta-value">${escapeHtml(startDateFormatted)}</div></div>
+                        <div class="cover-meta-row"><div class="cover-meta-label">Product:</div><div class="cover-meta-value">${escapeHtml(productVal)}</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-break-wrapper">
+                <div class="print-info-page">
+                    <div class="info-main-title">Learning Guidelines & Instructions</div>
+                    <div class="info-grid-layout">
+                        <div style="display:flex; flex-direction:column; gap:20px;">
+                            <div class="info-card">
+                                <h3>🎓 Cornerstone - Your Home of Learning at MRI</h3>
+                                <p>Unless it says otherwise in your schedule, you'll find all your self-led learning on your Cornerstone Transcript. While you're there - why not have a little explore? Cornerstone is packed with thousands of courses, so it's a great place to discover extra learning that can support you in your new role at MRI.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>📆 Live Sessions</h3>
+                                <p>To make the most of your onboarding journey, it's important to attend these sessions as scheduled. They're a great opportunity to connect, ask questions, and stay on track - so try not to miss them! If you have a conflict with another meeting or training, please reach out to your learning plan contact to determine what you should attend. Note that the sessions on your schedule are displayed in your local time zone.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>🎯 Self Led Learning</h3>
+                                <p>Keep an eye on the due dates for your self-led learning, which you will find on the schedule. Some live sessions have prep or learning to complete beforehand, so it's super important to stick to the due dates in your learning plan. To stay on track, we recommend adding these dates in your calendar.</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:20px;">
+                            <div class="info-card">
+                                <h3>📌 Compliance and Mandatory Training</h3>
+                                <p>There is some mandatory training you will need to complete which is not listed in your schedule. You can find the due date on your Cornerstone Transcript, so please take a moment to check it and make sure it's completed on time.</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>❓ Questions</h3>
+                                <p>Feel free to reach out to your learning plan contact - they're here to help and support you along the way!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-contact-footer">Your learning plan contact is: <span>${escapeHtml(lpOwner)}</span></div>
+                </div>
+            </div>
+            
+            <div class="print-data-container">
+                <div class="print-data-header">
+                    <span>Learning Plan Schedule Timeline Agenda</span>
+                    <span style="font-size:12px; font-weight:400;">Candidate: ${escapeHtml(prideName)}</span>
+                </div>
+                <table class="print-table">
+                    <thead><tr>
+                        <th class="pcol-title">Training Title</th><th class="pcol-inst">Instructor</th><th class="pcol-target">Live Session Date & Time</th>
+                        <th class="pcol-dur">Duration</th><th class="pcol-notes">Additional Notes</th><th class="pcol-due">Due Date</th>
+                    </tr></thead><tbody>
+        `;
+
+        if (workspaceDataset.length === 0) {
+            printHTML += `<tr><td colspan="6" style="text-align:center; font-style:italic;">No active entries mapped to this timeline matrix.</td></tr>`;
+        } else {
+            workspaceDataset.forEach(row => {
+                let formattedDue = '---';
+                if (row.dueDate) { 
+                    const parts = row.dueDate.split('-');
+                    if (parts.length === 3) formattedDue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                const instructorNormalize = (row.instructor || '').trim().toLowerCase();
+                
+                const isLiveOrExternal = row.type === "Live Session" || row.type === "External Learning (no CSOD assignment)";
+                const scheduleDisplay = (isLiveOrExternal && instructorNormalize !== "self-led" && instructorNormalize !== "self led") ? (row.targetDateTime || '⚠️ Missing Details') : '';
+
+                printHTML += `
+                    <tr>
+                        <td><strong>${escapeHtml(row.title || 'Untitled Module')}</strong><br><span style="font-size:9px; color:#555;">Type: ${escapeHtml(row.type || 'Unassigned')}</span></td>
+                        <td>${escapeHtml(row.instructor || '---')}</td>
+                        <td>${escapeHtml(scheduleDisplay)}</td>
+                        <td style="text-align:center;">${escapeHtml(row.duration || '---')}</td>
+                        <td>${parseRichText(row.additionalNotes || '---')}</td>
+                        <td>${escapeHtml(formattedDue)}</td>
+                    </tr>`;
+            });
+        }
+        printHTML += `</tbody></table></div>`;
+
+        const container = document.getElementById('printTemplateContainer');
+        container.innerHTML = printHTML;
+        window.print();
+        container.innerHTML = '';
+    }
+</script>
+</body>
+</html>
