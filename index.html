@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan Workspace</title>
+    <title>Learning Plan v0.992</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <style>
@@ -163,6 +163,8 @@
         .calendar-day.pre-start-session:hover { background-color: #fca5a5; }
         .calendar-day.today.pre-start-session { background-color: #ef4444; color: #ffffff; box-shadow: inset 0 0 0 2px #fca5a5; }
 
+        .sanity-moon { font-size: 14px; margin-left: 6px; cursor: help; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+
         /* --- Custom Modal Confirm Overlay --- */
         .custom-confirm-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -222,7 +224,7 @@
         .btn-danger { background: var(--danger-color); color: white; }
         .btn-danger:hover:not(:disabled) { background: #dc2626; }
 
-        .bulk-action-bar { display: none; background: var(--accent-color); color: white; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; justify-content: flex-start; gap: 24px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .bulk-action-bar { display: none; background: var(--accent-color); color: white; padding: 10px 16px; border-radius: 6px; justify-content: flex-start; gap: 24px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.15); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; margin: 0; }
         .bulk-action-bar.active { display: flex; }
         .bulk-action-text { font-weight: 600; font-size: 14px; }
         .bulk-action-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.15s ease; }
@@ -340,6 +342,9 @@
             align-items: center;
             overflow-x: auto;
             white-space: nowrap;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            border-radius: 4px;
         }
         div.table-input.content-editable-cell::-webkit-scrollbar { display: none; }
         div.table-input.content-editable-cell:empty:before {
@@ -355,11 +360,39 @@
         .cell-warning { background-color: var(--warning-amber-bg) !important; border-color: var(--warning-amber-border) !important; color: var(--warning-amber-text) !important; }
         .cell-valid { background-color: var(--valid-green-bg) !important; border-color: var(--valid-green-border) !important; color: var(--valid-green-text) !important; }
         .read-only-cell { color: var(--text-secondary); font-weight: 500; background-color: rgba(248, 250, 252, 0.5); display: block; line-height: 28px; height: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .empty-placeholder { padding: 48px; text-align: center; color: var(--text-secondary); font-style: italic; background: #fff; border-radius: 0 0 8px 8px; }
+        .empty-placeholder { padding: 64px 24px; text-align: center; color: var(--text-secondary); background: #fff; border-radius: 0 0 8px 8px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .empty-icon { width: 64px; height: 64px; color: #cbd5e1; }
+        .empty-text { font-size: 14px; max-width: 400px; line-height: 1.5; color: var(--text-secondary); text-align: center; }
+
+        tr.matrix-row:hover td { background-color: #f8fafc; }
+        tr.matrix-row:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-color); }
+
+       select.pill-dropdown { border-radius: 12px; padding: 4px 24px 4px 12px; font-weight: 600; font-size: 12px; border: 1px solid transparent; height: 26px; transition: all 0.15s ease; }
+        select.pill-dropdown.time-select { border-color: #e2e8f0; background-color: #f8fafc; color: var(--text-primary); }
+        select.pill-dropdown.time-select:hover:not(:disabled) { border-color: #cbd5e1; background-color: #f1f5f9; }
+        select.pill-dropdown.status-exists { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
+        select.pill-dropdown.status-needs { background-color: #fef08a; color: #854d0e; border-color: #fde047; }
 
         .validation-warning-container { position: relative; display: block; width: 100%; overflow: visible !important; }
+
+        .floating-mini-summary { position: fixed; bottom: 24px; right: 24px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 900; display: flex; gap: 16px; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; pointer-events: none; transform: translateY(10px); }
+        .floating-mini-summary.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .mini-stat { display: flex; flex-direction: column; gap: 2px; }
+        .mini-stat-label { color: var(--text-secondary); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mini-stat-value { color: var(--text-primary); font-size: 13px; font-weight: 700; }
+        .mini-stat-value.success { color: var(--success-color); }
         .validation-warning-container::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; background-color: var(--danger-color); border-radius: 50%; z-index: 100; pointer-events: none; }
         .validation-warning-container:hover::before { content: "Warning: Live Session Date cannot occur before the Hire Start Date."; position: absolute; bottom: calc(100% + 8px); right: 0; width: 240px; background-color: #1e293b; color: #ffffff; font-size: 11px; line-height: 1.4; padding: 8px 12px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15); z-index: 9999 !important; white-space: normal; word-wrap: break-word; pointer-events: none; }
+
+        /* --- Collapsible Control Panel Styles --- */
+        .control-panel-toggle { display: flex; justify-content: space-between; align-items: center; background: #e2e8f0; padding: 12px 20px; border-radius: 10px 10px 0 0; cursor: pointer; user-select: none; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-primary); letter-spacing: 0.5px; transition: all 0.2s ease; margin-top: 16px; }
+        .control-panel-toggle:hover { background: #cbd5e1; }
+        .control-panel-toggle.collapsed-header { border-radius: 10px; margin-bottom: 16px; }
+        
+        .middle-section-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin 0.35s ease-out; margin-bottom: 24px; background: linear-gradient(to bottom, #f1f5f9, #f8fafc); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 10px 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .middle-section-wrapper.collapsed { grid-template-rows: 0fr; margin-bottom: 0px; border-color: transparent; background: transparent; box-shadow: none; }
+        .middle-section-wrapper .middle-section-container { overflow: hidden; margin-bottom: 0; padding: 20px 20px 4px 20px; }
+        .icon-collapsed { transform: rotate(-90deg); }
 
         #printTemplateContainer { display: none; }
 
@@ -413,7 +446,7 @@
 
 <div class="container">
     <header>
-        <h1>Learning Plan Workspace v0.99a</h1>
+        <h1>Learning Plan</h1>
         <p>By Joe Jongue</p>
     </header>
 
@@ -433,7 +466,13 @@
         <div class="config-field"><label>Learning Plan Owner</label><input type="text" id="metaLPOwner" placeholder="Enter Plan Owner Name..."></div>
     </div>
 
-    <div class="middle-section-container">
+    <div id="controlPanelHeader" class="control-panel-toggle" onclick="toggleControlPanel()" title="Click to collapse/expand control panels">
+        <div style="display: flex; align-items: center; gap: 6px;">🎛️ Workspace Control Panels</div>
+        <span id="controlPanelIcon" style="transition: transform 0.3s ease;">▼</span>
+    </div>
+
+    <div id="controlPanelWrapper" class="middle-section-wrapper">
+        <div class="middle-section-container">
         <div class="middle-section-block">
             <div class="section-panel-label">📋 Curriculum Templates</div>
             <div class="template-panel-flex">
@@ -511,17 +550,25 @@
             </div>
         </div>
         </div>
+    <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: center; position: relative;">
+        <div class="search-wrapper" style="position: relative; flex-shrink: 0; width: 300px;">
+            <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="matrixSearchInput" class="table-input" style="width: 100%; padding: 8px 16px 8px 38px; border-radius: 20px; border: 1px solid var(--border-color); background: #fff; font-size: 13px; transition: border-color 0.2s, box-shadow 0.2s; height: 36px;" placeholder="Search all rows..." onkeyup="executeLiveSearch()">
+        </div>
+        
+        <div style="position: relative; flex-grow: 1;">
+            <div class="paste-notice" style="margin-bottom: 0;">
+                💡 <strong>Interactive Table:</strong> Select rows to copy/delete. Duplicate rows, or type <code>[Link Text](https://url.com)</code> in notes to embed links.
+            </div>
 
-    <div class="paste-notice">
-        💡 <strong>Interactive Table:</strong> Select rows to copy/delete. Duplicate rows, or type <code>[Link Text](https://url.com)</code> in notes to embed links.
-    </div>
-
-    <div id="bulkActionBar" class="bulk-action-bar">
-        <div class="bulk-action-text"><span id="bulkActionCount">0</span> row(s) selected</div>
-        <div style="display: flex; gap: 8px;">
-            <button id="copySelectedBtn" class="bulk-action-btn" style="background: rgba(255,255,255,0.3);" onclick="executeBulkAction('copy')">Copy Selected</button>
-            <button class="bulk-action-btn" onclick="executeBulkAction('keep')">Keep Only Selected</button>
-            <button class="bulk-action-btn danger" onclick="executeBulkAction('delete')">Delete Selected</button>
+            <div id="bulkActionBar" class="bulk-action-bar">
+                <div class="bulk-action-text"><span id="bulkActionCount">0</span> row(s) selected</div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="copySelectedBtn" class="bulk-action-btn" style="background: rgba(255,255,255,0.3);" onclick="executeBulkAction('copy')">Copy Selected</button>
+                    <button class="bulk-action-btn" onclick="executeBulkAction('keep')">Keep Only Selected</button>
+                    <button class="bulk-action-btn danger" onclick="executeBulkAction('delete')">Delete Selected</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -553,8 +600,16 @@
             </thead>
             <tbody id="matrixBody"></tbody>
         </table>
-        <div id="emptyState" class="empty-placeholder">No active records parsed. Apply a curriculum template or paste clipboard cells to populate layout data rows.</div>
+        <div id="emptyState" class="empty-placeholder">
+            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            
+			</div>
     </div>
+</div>
+
+<div class="floating-mini-summary" id="floatingMiniSummary">
+    <div class="mini-stat"><span class="mini-stat-label">Total Duration</span><span class="mini-stat-value success" id="miniStatTime">0m</span></div>
+    <div class="mini-stat"><span class="mini-stat-label">Learning Period</span><span class="mini-stat-value" id="miniStatPeriod">N/A</span></div>
 </div>
 
 <div class="floating-calendar" id="floatingCalendar">
@@ -590,6 +645,11 @@
 <div id="customConfirmOverlay" class="custom-confirm-overlay">
     <div class="custom-confirm-dialog">
         <div class="custom-confirm-message" id="customConfirmMessage">Are you sure?</div>
+        <div id="modalCheckboxContainer" style="display:none; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary);">
+            <label style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <input type="checkbox" id="modalCheckbox"> Do not show this message again
+            </label>
+        </div>
         <div class="custom-confirm-actions">
             <button id="customConfirmCancelBtn" class="btn btn-cancel">Cancel</button>
             <button id="customConfirmYesBtn" class="btn btn-danger">Yes, proceed</button>
@@ -952,19 +1012,36 @@
                 }
             }
         });
+
+        // Load saved panel state on startup
+        const savedPanelState = localStorage.getItem('controlPanelCollapsed');
+        if (savedPanelState === 'true') {
+            toggleControlPanel(true);
+        }
+
         runGlobalRecalculationEngine(); 
     });
 
     /* =====================================================================
        CUSTOM MODAL CONFIRMATION ENGINE
        ===================================================================== */
-    function showCustomModal(message, isAlert = false, onConfirm = null, onCancel = null, customYesText = null, customNoText = null) {
+    function showCustomModal(message, isAlert = false, onConfirm = null, onCancel = null, customYesText = null, customNoText = null, checkboxKey = null) {
         const overlay = document.getElementById('customConfirmOverlay');
         const msgEl = document.getElementById('customConfirmMessage');
         const yesBtn = document.getElementById('customConfirmYesBtn');
         const cancelBtn = document.getElementById('customConfirmCancelBtn');
+        const checkboxContainer = document.getElementById('modalCheckboxContainer');
+        const checkbox = document.getElementById('modalCheckbox');
 
         msgEl.textContent = message;
+
+        // Handle the "Do not show again" checkbox visibility
+        if (checkboxKey) {
+            checkboxContainer.style.display = 'block';
+            checkbox.checked = false; // Reset it each time it opens
+        } else {
+            checkboxContainer.style.display = 'none';
+        }
         
         if (isAlert) {
             cancelBtn.style.display = 'none';
@@ -987,6 +1064,10 @@
         };
 
         yesBtn.onclick = () => {
+            // Save preference if the user checked the box
+            if (checkboxKey && checkbox.checked) {
+                localStorage.setItem(checkboxKey, 'true');
+            }
             cleanup();
             if (onConfirm) onConfirm();
         };
@@ -995,6 +1076,32 @@
             cleanup();
             if (onCancel) onCancel();
         };
+    }
+
+    /* =====================================================================
+       UI STATE MANAGEMENT
+       ===================================================================== */
+    function toggleControlPanel(forceState = null) {
+        const wrapper = document.getElementById('controlPanelWrapper');
+        const icon = document.getElementById('controlPanelIcon');
+        
+        let isCollapsed = forceState !== null ? forceState : !wrapper.classList.contains('collapsed');
+
+        const header = document.getElementById('controlPanelHeader');
+        const miniSummary = document.getElementById('floatingMiniSummary');
+
+        if (isCollapsed) {
+            wrapper.classList.add('collapsed');
+            icon.classList.add('icon-collapsed');
+            header.classList.add('collapsed-header');
+            if (miniSummary) miniSummary.classList.add('visible');
+        } else {
+            wrapper.classList.remove('collapsed');
+            icon.classList.remove('icon-collapsed');
+            header.classList.remove('collapsed-header');
+            if (miniSummary) miniSummary.classList.remove('visible');
+        }
+        localStorage.setItem('controlPanelCollapsed', isCollapsed);
     }
 
     /* =====================================================================
@@ -1191,6 +1298,13 @@
     }
 
     function executeBulkAction(actionType) {
+        // Moved this to the top so all actions can use it
+        const finalizeBulkAction = () => {
+            selectedRowIds.clear();
+            updateBulkActionBar();
+            runGlobalRecalculationEngine();
+        };
+
         if (actionType === 'copy') {
             const rowsToCopy = workspaceDataset.filter(row => selectedRowIds.has(row.id));
             
@@ -1212,30 +1326,41 @@
             }).join('\n');
 
             navigator.clipboard.writeText(tsvData).then(() => {
-                const btn = document.getElementById('copySelectedBtn');
-                const originalText = btn.textContent;
-                const originalBg = btn.style.background;
-                
-                btn.textContent = '✓ Copied!';
-                btn.style.background = 'var(--success-color)';
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = originalBg;
-                }, 1500);
+                // Check if user previously muted this alert
+                if (localStorage.getItem('muteCopyAlert') !== 'true') {
+                    // If NOT muted, clear selection immediately and show modal
+                    finalizeBulkAction();
+                    
+                    showCustomModal(
+                        "✅ Copied successfully! Press Ctrl + V (or Cmd + V on Mac) to paste these rows into this table or another template tab.", 
+                        true, null, null, null, null, 'muteCopyAlert' 
+                    );
+                } else {
+                    // Fallback UX: If muted, keep the bar visible briefly
+                    const btn = document.getElementById('copySelectedBtn');
+                    const originalText = btn.textContent;
+                    const originalBg = btn.style.background;
+                    
+                    btn.textContent = '✓ Copied!';
+                    btn.style.background = 'var(--success-color)';
+                    
+                    // Delay the hiding of the bar and clearing of checkboxes by 1.5 seconds
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = originalBg;
+                        
+                        // Hide the blue bar and clear checkboxes AFTER the delay
+                        finalizeBulkAction(); 
+                    }, 1500);
+                }
+
             }).catch(err => {
                 console.error('Failed to copy to clipboard', err);
                 showCustomModal("Clipboard access denied. Please allow clipboard permissions in your browser.", true);
             });
             
-            return; // We do not clear the selection after copying
+            return; 
         }
-
-        const finalizeBulkAction = () => {
-            selectedRowIds.clear();
-            updateBulkActionBar();
-            runGlobalRecalculationEngine();
-        };
 
         if (actionType === 'delete') {
             // Check if exactly one row is selected
@@ -1364,6 +1489,11 @@
             <div class="summary-row"><span>Learning Plan Period</span> <span class="summary-val">${periodDisplay}</span></div>
             <div class="summary-row"><span>Total Duration</span> <span class="summary-val total-time">${timeDisplay}</span></div>
         `;
+
+        const miniTime = document.getElementById('miniStatTime');
+        const miniPeriod = document.getElementById('miniStatPeriod');
+        if (miniTime) miniTime.textContent = timeDisplay;
+        if (miniPeriod) miniPeriod.textContent = periodDisplay;
     }
 
     // --- Floating Calendar Widget Logic ---
@@ -1815,11 +1945,18 @@
                 if (isNaN(baseDateTime.getTime())) throw new Error();
                 const netMinutesCorrection = b6Obj.offset - b5Obj.offset;
                 const evaluatedTimestamp = baseDateTime.getTime() + (netMinutesCorrection * 60 * 1000);
+                const targetDateObj = new Date(evaluatedTimestamp);
                 
-                row.targetDateTime = new Date(evaluatedTimestamp).toLocaleString('en-AU', {
+                row.targetDateTime = targetDateObj.toLocaleString('en-AU', {
                     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true
                 });
-            } catch (e) { row.targetDateTime = ""; }
+                
+                // --- SANITY CHECK LOGIC ---
+                // Check if the hour falls outside standard business hours (8 AM - 6 PM)
+                const targetHour = targetDateObj.getHours();
+                row.outsideBusinessHours = (targetHour < 8 || targetHour >= 18);
+
+            } catch (e) { row.targetDateTime = ""; row.outsideBusinessHours = false; }
         });
     }
 
@@ -1947,6 +2084,22 @@
         const headers = ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"];
         sheetDataMatrix.push(headers.map(h => ({ v: h, s: excelStyles.styleHeader })));
 
+        // Helper to format YYYY-MM-DD to DD-MMM-YYYY for Excel exports
+        const formatForExcelDate = (dateStr) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const year = parts[0];
+                const day = parseInt(parts[2], 10);
+                const monthIdx = parseInt(parts[1], 10) - 1;
+                if (!isNaN(day) && monthIdx >= 0 && monthIdx < 12) {
+                    return `${String(day).padStart(2, '0')}-${months[monthIdx]}-${year}`;
+                }
+            }
+            return dateStr;
+        };
+
         // Append Matrix Data Rows
         workspaceDataset.forEach(row => {
             let textTypeIdentifier = row.type || 'Unassigned';
@@ -1966,10 +2119,10 @@
                 row.title || '', 
                 styledTypeCell, 
                 row.instructor || '', 
-                row.liveSessionDate || '',
+                formatForExcelDate(row.liveSessionDate),
                 row.startTime || '', 
                 row.duration || '', 
-                row.dueDate || '', 
+                formatForExcelDate(row.dueDate), 
                 row.eventStatus || '',
                 row.locatorNumber || '', 
                 row.sessionTimezone || '', 
@@ -2105,6 +2258,7 @@
             const statusInputClass = isLive ? (row.eventStatus ? (row.eventStatus === "Needs to be created in Cornerstone" ? 'cell-warning' : '') : 'cell-required-empty') : 'cell-disabled';
             const locatorInputClass = isLive ? (row.eventStatus === "Exists in Cornerstone" ? (row.locatorNumber ? '' : 'cell-required-empty') : '') : 'cell-disabled';
             const targetCellClass = row.targetDateTime ? 'cell-valid' : '';
+            const sanityWarning = row.outsideBusinessHours ? `<span class="sanity-moon" title="Warning: This session converts to a time outside standard business hours (8 AM - 6 PM)">🌙</span>` : '';
             
             let showTimelineWarningFlag = false;
             if (canHaveTime && row.liveSessionDate && masterStartDateStr) {
@@ -2136,7 +2290,7 @@
                 </td>
                 <td class="col-title"><input type="text" class="table-input" value="${escapeHtml(row.title)}" title="${escapeHtml(row.title)}" data-index="${idx}" data-field="title" placeholder="Enter Title..."></td>
                 <td class="col-type">
-                    <select class="table-input ${selectArrowModifier}" data-index="${idx}" data-field="type" style="background-color: ${typeStyle.bg}; color: ${typeStyle.text}; font-weight: 600;">
+                    <select class="table-input pill-dropdown ${selectArrowModifier}" data-index="${idx}" data-field="type" style="background-color: ${typeStyle.bg}; color: ${typeStyle.text};">
                         <option value="" ${row.type === '' ? 'selected' : ''}>-- Select Type --</option>
                         ${appLookups.courseTypes.map(type => `<option value="${type}" ${row.type === type ? 'selected' : ''} style="background-color: #ffffff; color: var(--text-primary);">${type}</option>`).join('')}
                     </select>
@@ -2144,7 +2298,7 @@
                 <td class="col-instructor"><input type="text" class="table-input ${instructorInputClass}" value="${escapeHtml(row.instructor)}" data-index="${idx}" data-field="instructor" placeholder="Instructor..."></td>
                 <td class="col-date"><div class="${dateContainerClass}"><input type="date" class="table-input ${dateInputClass}" value="${row.liveSessionDate}" data-index="${idx}" data-field="liveSessionDate" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}></div></td>
                 <td class="col-time">
-                    <select class="table-input ${timeInputClass}" data-index="${idx}" data-field="startTime" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}>
+                    <select class="table-input table-input-darktext pill-dropdown time-select ${timeInputClass}" data-index="${idx}" data-field="startTime" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}>
                         <option value="">--:--</option>
                         ${appLookups.startTimes.map(t => `<option value="${t.display}" ${row.startTime === t.display ? 'selected' : ''}>${t.display}</option>`).join('')}
                     </select>
@@ -2152,7 +2306,7 @@
                 <td class="col-duration"><input type="text" class="table-input ${durationInputClass}" value="${escapeHtml(row.duration)}" data-index="${idx}" data-field="duration" placeholder="0h"></td>
                 <td class="col-due"><input type="date" class="table-input ${dueInputClass}" value="${isLive ? '' : row.dueDate}" data-index="${idx}" data-field="dueDate" ${isLive ? 'disabled' : ''}></td>
                 <td class="col-status">
-                    <select class="table-input ${statusInputClass} ${fieldsDisabledClass}" data-index="${idx}" data-field="eventStatus" ${isLive ? '' : 'disabled'}>
+                    <select class="table-input pill-dropdown ${statusInputClass} ${fieldsDisabledClass} ${row.eventStatus === 'Exists in Cornerstone' ? 'status-exists' : (row.eventStatus === 'Needs to be created in Cornerstone' ? 'status-needs' : '')}" data-index="${idx}" data-field="eventStatus" ${isLive ? '' : 'disabled'}>
                         <option value="" ${row.eventStatus === '' ? 'selected' : ''}>-- Select One --</option>
                         ${appLookups.eventStatus.map(status => `<option value="${status}" ${row.eventStatus === status ? 'selected' : ''} style="background-color: #ffffff; color: var(--text-primary);">${status}</option>`).join('')}
                     </select>
@@ -2160,7 +2314,7 @@
                 <td class="col-locator"><input type="text" class="table-input ${locatorInputClass} ${fieldsDisabledClass}" value="${escapeHtml(row.locatorNumber)}" data-index="${idx}" data-field="locatorNumber" placeholder="ID..." ${isLive ? '' : 'disabled'}></td>
                 <td class="col-notes"><div contenteditable="true" class="table-input content-editable-cell" data-index="${idx}" data-field="additionalNotes" data-placeholder="Add Notes...">${parseRichText(row.additionalNotes)}</div></td>
                 <td class="col-tz"><span class="read-only-cell">${escapeHtml(row.sessionTimezone)}</span></td>
-                <td class="col-target"><span class="read-only-cell ${targetCellClass}" style="font-weight:600;">${escapeHtml(row.targetDateTime)}</span></td>
+                <td class="col-target"><span class="read-only-cell ${targetCellClass}" style="font-weight:600;">${escapeHtml(row.targetDateTime)}${sanityWarning}</span></td>
                 <td class="col-lp-notes"><div contenteditable="true" class="table-input content-editable-cell" data-index="${idx}" data-field="lpOwnerNotes" data-placeholder="Add Notes...">${parseRichText(row.lpOwnerNotes)}</div></td>
             `;
             tbody.appendChild(tr);
@@ -2600,22 +2754,72 @@
         }
         printHTML += `</tbody></table></div>`;
 
-        const container = document.getElementById('printTemplateContainer');
-        container.innerHTML = printHTML;
+        // --- THE IFRAME ISOLATION METHOD ---
+        
+        // 1. Remove any existing iframe from previous print jobs to prevent browser freezing
+        let oldIframe = document.getElementById('hiddenPrintFrame');
+        if (oldIframe) {
+            oldIframe.remove();
+        }
 
-        // Temporarily hijack the document title to force the browser's PDF filename
+        // 2. Create a brand new, pristine iframe for this specific print job
+        let printIframe = document.createElement('iframe');
+        printIframe.id = 'hiddenPrintFrame';
+        printIframe.style.position = 'absolute';
+        printIframe.style.top = '-9999px'; // Tuck it far off-screen
+        printIframe.style.width = '0px';
+        printIframe.style.height = '0px';
+        printIframe.style.border = 'none';
+        document.body.appendChild(printIframe);
+
+        const iframeDoc = printIframe.contentWindow.document;
+        
+        // 2. Clone all CSS styles from the main page so your @media print rules carry over
+        const pageStyles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
+
+        // 3. Write a brand new, clean HTML document directly into the hidden iframe
+        iframeDoc.open();
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${dynamicFilename}</title>
+                ${pageStyles}
+            </head>
+            <body>
+                <div id="printTemplateContainer" style="display: block !important;">
+                    ${printHTML}
+                </div>
+            </body>
+            </html>
+        `);
+        iframeDoc.close();
+
+        // 4. Hijack the main document title (Chromium uses the parent title for iframe PDF exports)
         const originalTitle = document.title;
         document.title = dynamicFilename;
 
-        // Wrap the print command in a timeout. This fixes the browser render race condition
-        // ensuring the DOM updates visually before the print spooler takes a snapshot.
+        // 5. Wait 250ms for the iframe to finish painting, then print
         setTimeout(() => {
-            window.print();
+            printIframe.contentWindow.focus();
             
-            // Clean up the DOM and restore original title after print dialog closes
-            document.title = originalTitle;
-            container.innerHTML = '';
-        }, 150);
+            // Create a smart cleanup function that only triggers AFTER the dialog closes
+            const cleanupPrintTitle = () => {
+                document.title = originalTitle;
+                printIframe.contentWindow.removeEventListener('afterprint', cleanupPrintTitle);
+                window.removeEventListener('focus', cleanupPrintTitle);
+            };
+            
+            // Listen for the native print dialog close event
+            printIframe.contentWindow.addEventListener('afterprint', cleanupPrintTitle);
+            
+            // Fallback for Chrome/Edge: Restore title when the user clicks back to the main window
+            window.addEventListener('focus', cleanupPrintTitle);
+
+            // Execute the print dialog
+            printIframe.contentWindow.print();
+            
+        }, 250);
     }
 	// --- QUICK LINK COPY FUNCTION ---
     function copyQuickLink(btnElement, urlString) {
@@ -2633,6 +2837,29 @@
             showCustomModal("Clipboard access denied. Please allow clipboard permissions.", true);
         });
     }
+
+    /* =====================================================================
+       LIVE DOM FILTER (SEARCH)
+       ===================================================================== */
+    function executeLiveSearch() {
+        const query = document.getElementById('matrixSearchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('tr.matrix-row');
+        
+        rows.forEach(row => {
+            // Gather standard text and explicit input/select values
+            const staticText = row.textContent.toLowerCase();
+            const inputs = Array.from(row.querySelectorAll('input, select'));
+            const dynamicValues = inputs.map(el => el.value.toLowerCase()).join(' ');
+            
+            // Toggle visibility based on string match
+            if (staticText.includes(query) || dynamicValues.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
 </script>
 </body>
 </html>
