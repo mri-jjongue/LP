@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan v0.996</title>
+    <title>Learning Plan v0.997</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
@@ -628,7 +628,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             <div class="section-panel-label">🔗 Quick Links</div>
             <div class="summary-panel" style="gap: 12px;">
                 <div class="summary-row">
-                    <a href="https://app.smartsheet.com/b/form/04e2516e8e0c42f28f39c88f5abd9409" target="_blank" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">CRT Form</a>
+                    <a href="https://app.smartsheet.com/b/form/04e2516e8e0c42f28f39c88f5abd9409" id="crtFormLink" target="_blank" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">CRT Form</a>
                     <button class="row-action-btn" onclick="copyQuickLink(this, 'https://app.smartsheet.com/b/form/04e2516e8e0c42f28f39c88f5abd9409')" title="Copy Link">📋</button>
                 </div>
                 <div class="summary-row">
@@ -1132,6 +1132,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         if (savedPanelState === 'true') {
             toggleControlPanel(true);
         }
+        
+        // Bind the CRT Form pre-population click event
+        const crtLinkElement = document.getElementById('crtFormLink');
+        if (crtLinkElement) {
+            crtLinkElement.addEventListener('click', launchPrepopulatedCRTForm);
+        }
 
         runGlobalRecalculationEngine(); 
     });
@@ -1457,6 +1463,94 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     /* =====================================================================
        WORKSPACE CORE FUNCTIONS
        ===================================================================== */
+
+// --- Smartsheet CRT Form Pre-population Subroutine ---
+    function launchPrepopulatedCRTForm(event) {
+        event.preventDefault(); 
+
+        const baseUrl = "https://app.smartsheet.com/b/form/04e2516e8e0c42f28f39c88f5abd9409";
+        
+        // --- 1. Extract Raw Values from DOM ---
+        const lpOwner = document.getElementById('metaLPOwner').value || "";
+        const prideName = document.getElementById('metaPrideName').value || "";
+        const roleTitle = document.getElementById('metaRoleTitle').value || "";
+        const region = document.getElementById('paramB7').value || "";
+        const product = document.getElementById('metaProduct').value || "";
+        const rawStartDate = document.getElementById('metaStartDate').value || "";
+        const orientation = document.getElementById('paramB4').value || ""; // NEW: Extract Orientation
+
+        // Helper function: Convert app's YYYY-MM-DD to Smartsheet's required MM/DD/YYYY
+        const formatForSmartsheet = (dateStr) => {
+            if (!dateStr) return "";
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[1]}/${parts[2]}/${parts[0]}`;
+            return dateStr;
+        };
+
+        // --- 2. Calculate Derived Data ---
+
+        // A. Present Date
+        const today = new Date();
+        const presentDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
+
+        // B. New Hire Start Date
+        const smartsheetStartDate = formatForSmartsheet(rawStartDate);
+
+        // C. Max Date from Matrix Dataset (Last Live Session or Due Date)
+        let maxTimestamp = 0;
+        if (typeof workspaceDataset !== 'undefined') {
+            workspaceDataset.forEach(row => {
+                if (row.liveSessionDate) {
+                    const ts = new Date(row.liveSessionDate).getTime();
+                    if (!isNaN(ts) && ts > maxTimestamp) maxTimestamp = ts;
+                }
+                if (row.dueDate) {
+                    const ts = new Date(row.dueDate).getTime();
+                    if (!isNaN(ts) && ts > maxTimestamp) maxTimestamp = ts;
+                }
+            });
+        }
+        
+        let maxDateFormatted = "";
+        if (maxTimestamp > 0) {
+            const maxDateObj = new Date(maxTimestamp);
+            maxDateFormatted = `${String(maxDateObj.getMonth() + 1).padStart(2, '0')}/${String(maxDateObj.getDate()).padStart(2, '0')}/${maxDateObj.getFullYear()}`;
+        }
+
+        // D. Excel Export Naming Convention Rule
+        const safeRegion = (region || 'Reg').replace(/[^a-zA-Z0-9]+/g, '_');
+        const safeProduct = (product || 'Prod').replace(/[^a-zA-Z0-9]/g, '_');
+        const safeRole = (roleTitle || 'Role').replace(/[^a-zA-Z0-9]/g, '_');
+        const safeName = (prideName || 'Name').replace(/[^a-zA-Z0-9]/g, '_');
+        const contentFileName = `${safeRegion}${safeProduct}_${safeRole}_${safeName}`;
+
+        // E. Notes/Questions Static Text (NEW)
+        // Extract just the YYYY from the raw HTML date, with fallbacks if fields are left empty
+        const startYear = rawStartDate ? rawStartDate.split('-')[0] : "YYYY";
+        const safeOrientation = orientation || "ORIENTATION";
+        const notesString = `File path is: ${startYear}/${safeOrientation}`;
+
+        // --- 3. Construct URL Query String ---
+        // Using URLSearchParams safely handles all encoding (spaces to '+', special characters to '%')
+        const params = new URLSearchParams();
+        
+        if (lpOwner) params.append('Your Name', lpOwner);
+        if (presentDate) params.append('Desired Completion Date', presentDate);
+        
+        params.append('Type of Request', 'Individual Learning Plan'); // Hardcoded string
+        
+        if (smartsheetStartDate) params.append('New Hire Start Date', smartsheetStartDate);
+        if (prideName) params.append('Employee Name(s)', prideName);
+        if (maxDateFormatted) params.append('Training/Learning Plan Due Date', maxDateFormatted);
+        if (contentFileName) params.append('Content File Name', contentFileName);
+        
+        // Append the new Notes/Questions string
+        params.append('Notes/Questions', notesString);
+
+        // --- 4. Execution ---
+        const finalUrl = `${baseUrl}?${params.toString()}`;
+        window.open(finalUrl, '_blank');
+    }
 
     // --- Template Import Subroutine ---
     function applySelectedTemplate() {
