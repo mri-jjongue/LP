@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan v0.997</title>
+    <title>Learning Plan v1.00</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
@@ -72,11 +72,11 @@
             --warning-amber-text: #fbbf24;
             --warning-amber-border: #78350f;
             --disabled-gray-bg: #1e293b;
-    }
+        }
 
-    [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-    }
+        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
 
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -94,6 +94,11 @@
         header { margin-bottom: 24px; }
         header h1 { font-size: 24px; margin: 0 0 8px 0; }
         header p { color: var(--text-secondary); margin: 0; }
+
+        /* --- History Buttons (Undo/Redo) --- */
+        .history-btn { background: var(--tab-inactive-bg); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 20px; padding: 0 16px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .history-btn:hover:not(:disabled) { color: var(--accent-color); background: var(--panel-bg); }
+        .history-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
         /* --- Theme Toggle Widget --- */
         .theme-toggle {
@@ -227,15 +232,12 @@
         }
         .calendar-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; }
         
-        /* Tooltip Theme 1: Standard (Baby Blue) */
         .calendar-tooltip.theme-blue { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .calendar-tooltip.theme-blue::after { border-color: #e0f2fe transparent transparent transparent; }
         
-        /* Tooltip Theme 2: Warning (Subtle Red) */
         .calendar-tooltip.theme-red { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
         .calendar-tooltip.theme-red::after { border-color: #fee2e2 transparent transparent transparent; }
         
-        /* Calendar Date: Pre-Start Date Conflict (Subtle Red) */
         .calendar-day.pre-start-session { background-color: #fee2e2; color: #991b1b; font-weight: 700; box-shadow: inset 0 0 0 1px #fca5a5; }
         .calendar-day.pre-start-session:hover { background-color: #fca5a5; }
         .calendar-day.today.pre-start-session { background-color: #ef4444; color: #ffffff; box-shadow: inset 0 0 0 2px #fca5a5; }
@@ -285,15 +287,11 @@
         .config-field { display: flex; flex-direction: column; gap: 6px; position: relative; }
         .config-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
 
-        select, input[type="text"], input[type="date"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); background-color: var(--input-bg); outline: none; transition: all 0.15s ease; font-family: inherit; width: 100%; }
+        select, input[type="text"], input[type="date"], input[type="email"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); background-color: var(--input-bg); outline: none; transition: all 0.15s ease; font-family: inherit; width: 100%; }
         select:focus, input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
         select:disabled, button:disabled { opacity: 0.5; cursor: not-allowed; }
 		
-
-/* Move the calendar icon */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    margin-left: 5px; 
-}
+        input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 5px; }
 
         .paste-notice { background-color: #eff6ff; border: 1px dashed var(--accent-color); padding: 10px 16px; border-radius: 6px; font-size: 13px; color: #1e40af; margin-bottom: 16px; }
         [data-theme="dark"] .paste-notice { background-color: #1e3a8a; color: #bfdbfe; }
@@ -368,20 +366,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         }
         table.matrix-table th:hover { background-color: var(--th-hover-bg); color: var(--text-primary); }
         
-        .th-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            white-space: normal;
-            text-align: center;
-        }
-        
-        .sort-indicator { 
-            font-size: 10px; 
-            color: var(--accent-color); 
-            flex-shrink: 0; 
-        }
+        .th-content { display: flex; align-items: center; justify-content: center; gap: 6px; white-space: normal; text-align: center; }
+        .sort-indicator { font-size: 10px; color: var(--accent-color); flex-shrink: 0; }
 
         tr:nth-child(even) { background-color: var(--row-striped); }
 
@@ -422,25 +408,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         .table-input:hover { border-color: var(--border-color); background-color: var(--input-bg); }
         .table-input:focus { border-color: var(--accent-color); background-color: var(--input-bg); outline: none; }
 
-        /* Rich content editable input for notes */
         div.table-input.content-editable-cell {
-            display: block; /* Changed from flex so text flows naturally */
-            overflow-y: auto; /* Changed to allow vertical scrolling */
-            overflow-x: hidden;
-            white-space: pre-wrap; /* Allows text to wrap and respects newlines */
-            word-wrap: break-word;
-            border: 1px solid var(--border-color);
-            background-color: var(--input-bg);
-            border-radius: 4px;
-            min-height: 30px;
-            max-height: 80px; /* Prevents the row from getting massively tall */
-            padding: 4px 8px;
+            display: block; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--border-color); background-color: var(--input-bg); border-radius: 4px; min-height: 30px; max-height: 80px; padding: 4px 8px;
         }
         div.table-input.content-editable-cell::-webkit-scrollbar { display: none; }
-        div.table-input.content-editable-cell:empty:before {
-            content: attr(data-placeholder);
-            color: var(--text-secondary);
-        }
+        div.table-input.content-editable-cell:empty:before { content: attr(data-placeholder); color: var(--text-secondary); }
 
         select.table-input { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23ffffff' d='M0 0h10L5 6z'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
         select.table-input-darktext { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%231e293b' d='M0 0h10L5 6z'/></svg>"); }
@@ -457,7 +429,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         tr.matrix-row:hover td { background-color: var(--hover-bg-subtle); }
         tr.matrix-row:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-color); }
 
-       select.pill-dropdown { border-radius: 12px; padding: 4px 24px 4px 12px; font-weight: 600; font-size: 12px; border: 1px solid transparent; height: 26px; transition: all 0.15s ease; }
+        select.pill-dropdown { border-radius: 12px; padding: 4px 24px 4px 12px; font-weight: 600; font-size: 12px; border: 1px solid transparent; height: 26px; transition: all 0.15s ease; }
         select.pill-dropdown.time-select { border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-primary); }
         select.pill-dropdown.time-select:hover:not(:disabled) { border-color: var(--border-color); background-color: var(--hover-bg-subtle); }
         select.pill-dropdown.status-exists { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
@@ -492,12 +464,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             @page { size: A4 landscape; margin: 0.6cm; }
             body { background: #ffffff !important; color: #000000 !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; overflow: visible !important; }
             
-            /* Aggressive omission of App UI layers to enforce strict print boundaries */
             .container, .theme-toggle, .floating-calendar, .calendar-tooltip, .bulk-action-bar, .top-scrollbar-container, .workspace-tabs-container, .custom-confirm-overlay { display: none !important; }
             
             #printTemplateContainer { display: block !important; width: 100% !important; }
 
-            /* Block wrapper for guaranteed page breaks across flex environments */
             .page-break-wrapper { page-break-after: always !important; break-after: page !important; display: block !important; width: 100%; height: 100vh; overflow: hidden; }
 
             .print-cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #0b2545 !important; color: #ffffff !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -524,7 +494,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             table.print-table td { padding: 10px 8px; border: 1px solid #e2e8f0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; vertical-align: top; line-height: 1.5; }
             table.print-table td a { color: #0284c7; text-decoration: underline; }
             
-            /* Print Layout Updates per request */
             .pcol-title   { width: 29%; }
             .pcol-inst    { width: 9%; text-align: center; }
             .pcol-target  { width: 14%; }
@@ -540,9 +509,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     <header>
         <img src="assets/mri_lp_logo.png" alt="MRI Learning Plan Logo" style="height: 130px; margin-bottom: 4px; display: block;">
         
-        <button id="startTourBtn" onclick="promptAppTour()" style="position: absolute; top: 0; right: 96px; height: 38px; display: flex; align-items: center; gap: 6px; background: var(--tab-inactive-bg); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 20px; padding: 0 16px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.color='var(--accent-color)'; this.style.background='var(--panel-bg)';" onmouseout="this.style.color='var(--text-secondary)'; this.style.background='var(--tab-inactive-bg)';">
-            🧭 App Tour
-        </button>
+        <div style="position: absolute; top: 0; right: 96px; display: flex; gap: 8px;">
+            <button id="undoBtn" class="history-btn" onclick="executeUndo()" title="Undo (Ctrl+Z)" disabled>↩ Undo</button>
+            <button id="redoBtn" class="history-btn" onclick="executeRedo()" title="Redo (Ctrl+Y)" disabled>↪ Redo</button>
+            <button id="startTourBtn" class="history-btn" onclick="promptAppTour()">🧭 App Tour</button>
+        </div>
 
         <div class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Theme">
             <div class="theme-icon light-icon">☀️</div>
@@ -550,8 +521,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         </div>
     </header>
 
-    <div class="workspace-tabs-container" id="workspaceTabsContainer">
-        </div>
+    <div class="workspace-tabs-container" id="workspaceTabsContainer"></div>
 
     <div class="section-panel-label">👤 New Hire Profile Details</div>
     <div class="config-grid" id="globalConfigGrid">
@@ -564,6 +534,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="config-field"><label>Region</label><select id="paramB7"><option value="">-- Select One --</option></select></div>
         <div class="config-field"><label>Product</label><input type="text" id="metaProduct" placeholder="Enter Product System..."></div>
         <div class="config-field"><label>Learning Plan Owner</label><input type="text" id="metaLPOwner" placeholder="Enter Plan Owner Name..."></div>
+        <div class="config-field"><label>Your Email Address</label><input type="email" id="metaLPEmail" placeholder="Enter your email..."></div>
     </div>
 
     <div id="controlPanelHeader" class="control-panel-toggle" onclick="toggleControlPanel()" title="Click to collapse/expand control panels">
@@ -572,33 +543,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     </div>
 
     <div id="controlPanelWrapper" class="middle-section-wrapper">
-        <div class="middle-section-container">
-        <div class="middle-section-block">
-            <div class="section-panel-label">📋 Curriculum Templates</div>
-            <div class="template-panel-flex">
-                <div class="template-controls">
-                    <div class="config-field">
-                        <label>Product Template Blueprint</label>
-                        <select id="templateProductDropdown">
-                            <option value="">-- Select Corporate Template Track --</option>
-                            </select>
-                    </div>
-                    <div class="config-field">
-                        <label>Role Matrix Blueprint</label>
-                        <select id="templateRoleDropdown">
-                            <option value="">-- Select Assignment Adaptation Role --</option>
-                            <option value="SupportAnalyst">Support Analyst</option>
-                            <option value="AccountManager">Account Manager</option>
-                            <option value="AccountExecutive">Account Executive</option>
-                            <option value="SalesDeliveryManager">Sales Delivery Manager</option>
-                            <option value="ProjectManager">Project Manager</option>
-                            <option value="ProjectCoordinator">Project Coordinator</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="importTemplateBtn" class="btn btn-primary" onclick="applySelectedTemplate()" style="align-self: center; margin-top: 8px;" disabled>📥 Import Template</button>
-            </div>
-        </div>
+        <div class="middle-section-container">   
 
         <div class="middle-section-block">
             <div class="section-panel-label">⚡ Actions</div>
@@ -608,10 +553,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 <button class="btn btn-primary" style="background:#8b5cf6;" onclick="document.getElementById('importFileInput').click()">📂 Import File</button>
                 <button class="btn btn-primary" onclick="executeChronologicalSort()">⇅ Sort Schedule</button>
                 <button class="btn btn-excel" onclick="generateAndDownloadBinaryXLSX()">📊 Export .xlsx</button>
-                <button class="btn btn-primary" style="background:#0ea5e9;" onclick="generateAndDownloadTemplateXLSX()">💾 Save Template</button>
+                <button class="btn btn-primary" style="background:#0ea5e9;" onclick="generateAndDownloadTemplateXLSX()">💾 Export to Excel</button>
                 <button class="btn btn-primary" style="background:#475569; grid-column: span 2;" onclick="generateAndTriggerPrintJob()">🖨️ Print PDF</button>
+                
+                <div style="grid-column: span 2; height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+                
+                <button class="btn btn-primary" style="background:#14b8a6; color:#fff;" onclick="exportWorkspaceStateToJSON()">📥 Save Session (.json)</button>
+                <button class="btn btn-primary" style="background:#f59e0b; color:#fff;" onclick="document.getElementById('importSessionInput').click()">📤 Load Session (.json)</button>
+                
                 <button class="btn btn-danger" style="grid-column: span 2;" onclick="clearWorkspace()">🗑️ Clear Table</button>
+                
                 <input type="file" id="importFileInput" style="display:none;" accept=".xlsx, .xls, .csv" onchange="handleFileImport(event)">
+                <input type="file" id="importSessionInput" style="display:none;" accept=".json" onchange="importWorkspaceStateFromJSON(event)">
             </div>
         </div>
         
@@ -620,8 +573,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 <div style="display: flex; align-items: center; gap: 6px;">📊 Summary Metrics</div>
                 <button class="refresh-btn" onclick="runGlobalRecalculationEngine()" title="Recalculate Metrics">🔄</button>
             </div>
-            <div class="summary-panel" id="summaryPanel">
-                </div>
+            <div class="summary-panel" id="summaryPanel"></div>
         </div>
 
         <div class="middle-section-block">
@@ -702,8 +654,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         </table>
         <div id="emptyState" class="empty-placeholder">
             <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-            
-			</div>
+        </div>
     </div>
 </div>
 
@@ -758,202 +709,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 </div>
 
 <script>
-    /* =====================================================================
-       DECOUPLED DATABASE CONSTANTS
-       ===================================================================== */
-    const TEMPLATE_NAMES = {
-        "PMX": "PMX (Commercial Management)",
-        "PropertyTree": "Property Tree",
-        "Vault": "Vault",
-        "Horizon": "Horizon",
-		"Strata Master": "Strata Master"
-    };
-
-    const TEMPLATE_DATABASE = {
-        "PMX": [
-            ["Microsoft Teams Overview", "Video", "Self-led", "", "", "1 hr"],
-            ["Triage and Troubleshooting", "eLearning", "Self-led", "", "", "45 mins"],
-            ["MRI Cloud Overview", "Video", "Self-led", "", "", "1 hr"],
-            ["Introduction to Partner Connect", "Video", "Self-led", "", "", "1 hr"],
-            ["MRI: Agora Introduction", "Video", "Self-led", "", "", "30 mins"],
-            ["PMX: Web Navigation", "Video", "Self-led", "", "", "20 mins"],
-            ["AWS Voice Agent Training - NA", "Video", "Self-led", "", "", "30  mins"],
-            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 mins"],
-            ["Salesforce: Introduction", "Video", "Self-led", "", "", "1 hr"],
-            ["General Troubleshooting", "Live Session", "", "", "11:30 AM", "1 hr"],
-            ["PMX: SQL Introduction", "eLearning", "Self-led", "", "", "1.5 hrs"],
-            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "", "", "3:00 PM", "2 hrs"],
-            ["PMX: Database Schema", "Live Session", "", "", "9:00 PM", "1 hr"],
-            ["SQL I Activity", "eLearning", "Self-led", "", "", "1.5 hrs"],
-            ["SQL I Exam", "eLearning", "Self-led", "", "", "1.5 hrs"],
-            ["Salesforce for Global Services - Introduction", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: SQL I", "Live Session", "", "", "4:30 PM", "1.5 hrs"],
-            ["PMX: Reporting", "Live Session", "", "", "7:00 PM", "1 hr"],
-            ["PMX: General Ledger - Prework (Podcast)", "Video", "Self-led", "", "", "20 mins"],
-            ["PMX: General Ledger - Journal Entries eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Accounting I", "Live Session", "", "", "3:00 PM", "1 hr"],
-            ["PMX: General Ledger - Financial Formats eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Accounts Payable - Vendors eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Accounts Payable - Prework (Podcast)", "Video", "Self-led", "", "", "20 mins"],
-            ["PMX: Commercial Management - Prework", "Material", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Building Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Accounts Payable - Invoices eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Accounts Payable - Bank Reconciliation eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Suite Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Building Accounting Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Leases - Lease Setup eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Introduction", "Live Session", "", "", "4:30 PM", "1.5 hrs"],
-            ["PMX: Commercial Management - Leases - Lease Administration eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Leases - Miscellaneous eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management Setup and Maintenance eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Leases - Billing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Monthly Activities - Creating Recurring Charges and Printing Statements eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Leasing", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Commercial Management - Batches - Daily Batch Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Batches - Reviewing and Posting Batches eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management – Income Categories", "Live Session", "", "", "3:00 PM", "1 hr"],
-            ["PMX: Commercial Management - Batches - Additional Batch Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Monthly Activities - Creating Journal Entries and Closing a Period eLeaning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Monthly Activities - Calculating Fees and Interest eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management – Rentup/Statements", "Live Session", "", "", "3:00 PM", "1 hr"],
-            ["PMX: Commercial Management - Other Accounts Receivable - Daily Processing eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Leases - Tenant Inquiry eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management - Transactions (Part I)", "External Learning (no CSOD assignment)", "Sara Schaffer", "", "", "1 hr"],
-            ["PMX: Commercial Management - Transactions (Part II)", "External Learning (no CSOD assignment)", "Sara Schaffer", "", "", "1 hr"],
-            ["PMX: Commercial Management - Building and Suite Miscellaneous eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Commercial Management – Reconciliation and Management Options", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Distributive Processing", "Live Session", "", "", "7:00 PM", "1 hr"],
-            ["Salesforce: Omni-Channel and Support Chat", "Video", "Self-led", "", "", "35 mins"],
-            ["MyMRI Client Portal Overview", "Video", "Self-led", "", "", "30 mins"],
-            ["Salesforce for Global Services - Managing Cases", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Corporate Accounts Receivable - Introduction", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["Mandatory Compliance Training", "External Learning (no CSOD assignment)", "Self-led", "", "", "5 hrs"],
-            ["Platform X: Report Gateway - Navigation and Running Reports eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Platform X: Report Gateway - Sharing and Scheduling Items eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Platform X: Report Gateway - Packets and Batches eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Platform X: Report Gateway - Users and Security eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["PMX: Application Studio - Introduction", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Application Studio - Page Builder - Building a Page", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Security Console", "Live Session", "", "", "8:00 PM", "1.5 hrs"],
-            ["PMX: Report Studio - Report Builder", "Live Session", "", "", "3:00 PM", "1 hr"],
-            ["PMX: Flexibility Toolkit - Report Design I", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Import/Export - Introduction", "Live Session", "", "", "8:30 PM", "1 hr"],
-            ["PMX: Flexibility Toolkit - Web Design I", "Live Session", "", "", "3:00 PM", "1.5 hrs"],
-            ["PMX: Flexibility Toolkit - Database Design", "Live Session", "", "", "7:00 PM", "1 hr"]
-        ],
-        "PropertyTree": [
-            ["Agora: Hello and Agora Gateway - Introduction", "Video", "Self-led", "", "", "30 min"],
-            ["MRI Cloud Overview", "Video", "Self-led", "", "", "40 min"],
-            ["Trust Accounting Fundamentals (Australia)", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Residential Property Management in ANZ: Understanding the Property Management Lifecycle", "Live Session", "", "", "1:30 PM", "1.5 hrs"],
-            ["AWS Voice Agent Training - APAC", "Video", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 1 - Navigation eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 min"],
-            ["Residential Property Sales in ANZ: Understanding the Property Lifecycle", "Live Session", "", "", "1:30 PM", "1.5 hrs"],
-            ["AWS Voice Training Quiz - Agent", "Quiz", "Quiz", "", "", "30 min"],
-            ["Property Tree: Session 2 - Ownership Profiles Residential eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 3 - Adding Property Profiles Residential eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 4 - Tenancy Profile Residential eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 15 - Accounts and Fees eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 14 - Transactions eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 13 - Invoice Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "Joe Jongue", "", "1:30 PM", "1.5 hrs"],
-            ["Property Tree: Invoice Genius KB Articles", "External Learning (no CSOD assignment)", "Self-led", "", "", "4 hr", "", "[1. Activate and configure Invoice Genius](https://propertytree.elevio.help/en/articles/93169)\n[2. Invoice Genius: Create invoices](https://propertytree.elevio.help/en/articles/92660)\n[3. Scanning guidelines for Invoice Genius](https://propertytree.elevio.help/en/articles/93016)\n[4. Update DEFT strata Biller ID in Invoice Genius](https://propertytree.elevio.help/en/articles/93141)\n[5. Process tenant water usage in Invoice Genius](https://propertytree.elevio.help/en/articles/93018)\n[6. Forward and manage invoices in Invoice Genius](https://propertytree.elevio.help/en/articles/92786)\n[7. Invoice Genius: FAQs](https://propertytree.elevio.help/en/articles/92764)"],
-            ["Triage & Troubleshooting", "eLearning", "Self-led", "", "", "45 min"],
-            ["Support Process: Ticket Management (Zendesk)", "Live Session", "Joe Jongue", "", "11:00 AM", "1 hr"],
-            ["Property Tree: Session 16 - Bank Reconciliation eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 21 - Automated Receipting Workflows eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["General Troubleshooting", "Live Session", "Joe Jongue", "", "1:30 PM", "1.5 hrs"],
-            ["Property Tree: Session 17 - Owner Payment and End of Month eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 6 - Communications eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 9 - Arrears Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 10 - Lease Renewal and Rent Changes eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 11 - Vacating Process and Archiving Profile eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 12 - New Tenancies eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 20 - Commercial Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 18 - Change of Ownership eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 22 – User Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 7 - Property Maintenance eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 8 - Inspection Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 5 - Managing Tasks eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Session 19 - Sales Management eLearning", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Property Tree: Agora Gateway eLearning", "eLearning", "Self-led", "", "", "45 min"],
-            ["Agora Insights: Introduction for Property Tree", "Video", "Self-led", "", "", "5 min"],
-            ["Property Tree: Workflows eLearning", "eLearning", "Self-led", "", "", "30 min"]
-        ],
-        "Vault": [
-            ["MRI Agora and Sunshine Falls", "eLearning", "Self-led", "", "", "1 hr"],
-			["Residential Property Management in ANZ: Understanding the Property Management Lifecycle", "Live Session", "", "", "1:30 PM", "1 hr 30 min"],
-            ["Residential Property Sales in ANZ: Understanding the Property Lifecycle", "Live Session", "", "", "1:30 PM", "1 hr 30 min"],
-            ["Vault: Contact Management", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Vault: Navigation and Day to Day Task", "eLearning", "Self-led", "", "", "1 hr"],
-			["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 min"],
-            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "", "", "1:30 PM", "1 hr 30 min"],
-			["Triage & Troubleshooting", "eLearning", "Self-led", "", "", "45 min"],
-			["General Troubleshooting", "Live Session", "", "", "1:30 PM", "1 hr 30 min"],
-			["Support Process: Ticket Management (Zendesk)", "Live Session", "", "", "1:30 PM", "1 hr"],
-			["Vault: Listing Process and Management", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Vault: Sales Process", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Vault: Managing Properties", "eLearning", "Self-led", "", "", "1 hr"],
-            ["Vault: Vault App", "Video", "Self-led", "", "", "1hr 5 min"],
-            ["Vault: Action List & Automation", "Video", "Self-led", "", "", "1 hr 5 min"],
-            ["Vault: Mastering Data Cleanup with Vault", "Video", "Self-led", "", "", "1 hr"],
-            ["Vault: All About Commercial", "Video", "Self-led", "", "", "30 min"],
-            ["Vault: Marketing with Designly", "Video", "Self-led", "", "", "1 hr 2 min"],
-            ["Vault: Secure Sign Integration", "Video", "Self-led", "", "", "17 min"],
-                        
-        ],
-        "Horizon": [
-            ["MRI Cloud Overview", "Video", "Self-led", "", "", "40 min"],
-            ["MRI Agora Introduction", "Video", "Self-led", "", "", "20 min"],
-            ["AWS Voice Agent Training - APAC", "Video", "Self-led", "", "", "1hr"],
-            ["Agora: Hello and MRI Agora Gateway - Introduction", "Video", "Self-led", "", "", "30 min"],
-            ["Introduction to Partner Connect", "Video", "Self-led", "", "", "45 min"],
-            ["Accounting I", "Video", "Self-led", "", "", "49 min"],
-            ["AWS Voice Training Quiz - Agent", "Quiz", "Quiz", "", "", "20 min"],
-            ["Industry Overview - Occupier in ANZ", "Live Session", "Mitch Cross", "", "11:00 AM", "1hr 30 min"],
-            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 min"],
-            ["Triage and Troubleshooting", "eLearning", "Self-led", "", "", "45 min"],
-            ["Providing Exceptional Customer Service Workshop", "Live Session", "", "", "1:30 PM", "1hr 30 min"],
-            ["Salesforce for Global Services - Introduction", "Video", "Self-led", "", "", "1hr 30 min"],
-            ["Salesforce for Global Services - Managing Cases", "Video", "Self-led", "", "", "1hr 30 min"],
-            ["Horizon V11: Overview", "Video", "Self-led", "", "", "1hr 28 min"],
-            ["General Troubleshooting", "Live Session", "", "", "1:30 PM", "1hr 30 min"],
-            ["Horizon V11: Property Structure I", "Video", "Self-led", "", "", "2hr 13 min"],
-            ["Horizon V11: Lease Payables I", "Video", "Self-led", "", "", "58 min"],
-            ["Horizon V11: Lease Receivables I", "Video", "Self-led", "", "", "1hr 19 min"],
-            ["Horizon V11: Accounts Receivables & Credit Control I", "Video", "Self-led", "", "", "1hr 56 min"],
-            ["Horizon V11: Accounts Payable I", "Video", "Self-led", "", "", "1hr 11 min"],
-            ["Horizon V11: Finance Structure & Cash Accounting I", "Video", "Self-led", "", "", "1hr 45 min"],
-            ["Horizon V11: Purchasing I", "Video", "Self-led", "", "", "1hr"],
-            ["Horizon Advance v11", "Video", "Self-led", "", "", "1hr 50 min"],
-            ["Horizon V11: System Administration I", "Video", "Self-led", "", "", "1hr 26 min"],
-            ["ProLease Enterprise / Horizon Courses", "Curriculum", "Self-led", "", "", "9hr 55 min"]
-        ],
-		"Strata Master": [
-            ["Australian Strata Management: A Practical Overview", "eLearning", "Self-led", "", "", "40 min"],
-            ["Residential Property Management in ANZ: Understanding the Property Management Lifecycle", "Live Session", "", "", "", "1 hr 30 min"],
-            ["Salesforce: Introduction", "Video", "Self-led", "", "", "30 min"],
-            ["AWS Voice Agent Training - APAC", "Video", "Self-led", "", "", "1 hr"],
-            ["Providing Exceptional Customer Service", "eLearning", "Self-led", "", "", "45 min"],
-            ["Salesforce for Global Services - Introduction", "Video", "Self-led", "", "", "49 min"],
-            ["Providing Exceptional Customer Service (Workshop)", "Live Session", "", "", "", "1 hr 30 min"],
-            ["Triage And Troubleshooting", "eLearning", "self-led", "", "", "45 min"],
-            ["Salesforce for Global Services - Managing Cases", "eLearning", "Self-led", "", "", "1 hr 30 min"],
-            ["AWS Voice Training Quiz - Agent", "Quiz", "Quiz", "", "", "20 min"],
-            ["General Troubleshooting", "Live Session", "", "", "1:30 PM", "1hr 30 min"],
-            ["Strata Master: Navigating Plans and Lots - Live Training", "External Learning (no CSOD assignment)", "", "", "1:30 PM", "1 hr"],
-            ["Strata Master: Dealing with Lots and Owners - Live Training", "External Learning (no CSOD assignment)", "", "", "1:30 PM", "1 hr"],
-            ["Strata Master: Strata Plan Reporting (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-            ["Strata Master: New Business 1 - Static Data (Live Training)", "External Learning (no CSOD assignment)", "", "", "1:30 PM", "1 hr"],
-            ["Strata Master: New Business 2 - Opening Balances (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-            ["Strata Master: Understanding Accounting for Strata Managers (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-            ["Strata Master: Proactive Portfolio Management (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-            ["Strata Master:  The Meeting Wizard (Live Training)", "External Learning (no CSOD assignment)", "", "", "1:30 PM", "1 hr"],
-            ["Strata Master: Managing Owner Arrears (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-            ["Strata Master: GST - BAS Preparation and Submission (Live Training)", "External Learning (no CSOD assignment)", "", "", "2:00 PM", "1 hr"],
-        ]
-    };
 
     /* =====================================================================
        APPLICATION STATE & MULTI-TAB ENGINE
@@ -961,25 +716,40 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     const appLookups = {
         orientation: ["Jan A","Jan B","Feb A","Feb B","Mar A","Mar B","Apr A","Apr B","May A","May B","Jun A","Jun B","Jul A","Jul B","Aug A","Aug B","Sep A","Sep B","Oct A","Oct B","Nov A","Nov B","Dec A","Dec B","N/A"],
         cornerstoneTimezones: [
-            { label: "UTC-05:00 EST (US & Canada)", offset: -300 }, { label: "UTC-04:00 EDT (US & Canada)", offset: -240 },
-            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", offset: 0 }, { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", offset: 60 },
-            { label: "UTC+02:00 SAST (Harare, Pretoria)", offset: 120 }, { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", offset: 330 },
-            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", offset: 480 }, { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", offset: 600 },
-            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", offset: 660 }, { label: "UTC+12:00 NZST (Auckland, Wellington)", offset: 720 },
-            { label: "UTC+13:00 NZDT (Auckland, Wellington)", offset: 780 }
+            { label: "UTC-05:00 EST (US & Canada)", iana: "America/New_York" }, 
+            { label: "UTC-04:00 EDT (US & Canada)", iana: "America/New_York" },
+            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", iana: "Europe/London" }, 
+            { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", iana: "Europe/London" },
+            { label: "UTC+02:00 SAST (Harare, Pretoria)", iana: "Africa/Johannesburg" }, 
+            { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", iana: "Asia/Kolkata" },
+            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", iana: "Asia/Singapore" }, 
+            { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", iana: "Australia/Melbourne" },
+            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", iana: "Australia/Melbourne" }, 
+            { label: "UTC+12:00 NZST (Auckland, Wellington)", iana: "Pacific/Auckland" },
+            { label: "UTC+13:00 NZDT (Auckland, Wellington)", iana: "Pacific/Auckland" }
         ],
         newHireTimezones: [
-            { label: "UTC-07:00 MST (US & Canada)", offset: -420 }, { label: "UTC-06:00 MDT (US & Canada)", offset: -360 },
-            { label: "UTC-06:00 CST (US & Canada)", offset: -360 }, { label: "UTC-05:00 CDT (US & Canada)", offset: -300 },
-            { label: "UTC-05:00 EST (US & Canada)", offset: -300 }, { label: "UTC-04:00 EDT (US & Canada)", offset: -240 },
-            { label: "UTC-08:00 PST (US & Canada)", offset: -480 }, { label: "UTC-07:00 PDT (US & Canada)", offset: -420 },
-            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", offset: 0 },   { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", offset: 60 },
-            { label: "UTC+02:00 SAST (Harare, Pretoria)", offset: 120 },  { label: "UTC+04:00 GST (Abu Dhabi, Muscat)", offset: 240 },
-            { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", offset: 330 }, { label: "UTC+08:00 PHST (Philippines)", offset: 480 },
-            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", offset: 480 }, { label: "UTC+08:00 AWST (Perth)", offset: 480 },
-            { label: "UTC+10:00 AEST (Brisbane)", offset: 600 },             { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", offset: 600 },
-            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", offset: 660 }, { label: "UTC+12:00 NZST (Auckland, Wellington)", offset: 720 },
-            { label: "UTC+13:00 NZDT (Auckland, Wellington)", offset: 780 }
+            { label: "UTC-07:00 MST (US & Canada)", iana: "America/Denver" }, 
+            { label: "UTC-06:00 MDT (US & Canada)", iana: "America/Denver" },
+            { label: "UTC-06:00 CST (US & Canada)", iana: "America/Chicago" }, 
+            { label: "UTC-05:00 CDT (US & Canada)", iana: "America/Chicago" },
+            { label: "UTC-05:00 EST (US & Canada)", iana: "America/New_York" }, 
+            { label: "UTC-04:00 EDT (US & Canada)", iana: "America/New_York" },
+            { label: "UTC-08:00 PST (US & Canada)", iana: "America/Los_Angeles" }, 
+            { label: "UTC-07:00 PDT (US & Canada)", iana: "America/Los_Angeles" },
+            { label: "UTC+00:00 GMT (Edinburgh, Lisbon, London)", iana: "Europe/London" },   
+            { label: "UTC+01:00 BST (Edinburgh, Lisbon, London)", iana: "Europe/London" },
+            { label: "UTC+02:00 SAST (Harare, Pretoria)", iana: "Africa/Johannesburg" },  
+            { label: "UTC+04:00 GST (Abu Dhabi, Muscat)", iana: "Asia/Dubai" },
+            { label: "UTC+05:30 IST (Chennai, Kolkata, Mumbai, New Delhi)", iana: "Asia/Kolkata" }, 
+            { label: "UTC+08:00 PHST (Philippines)", iana: "Asia/Manila" },
+            { label: "UTC+08:00 SGT (Kuala Lumpur, Singapore)", iana: "Asia/Singapore" }, 
+            { label: "UTC+08:00 AWST (Perth)", iana: "Australia/Perth" },
+            { label: "UTC+10:00 AEST (Brisbane)", iana: "Australia/Brisbane" },             
+            { label: "UTC+10:00 AEST (Canberra, Melbourne, Sydney)", iana: "Australia/Melbourne" },
+            { label: "UTC+11:00 AEDT (Canberra, Melbourne, Sydney)", iana: "Australia/Melbourne" }, 
+            { label: "UTC+12:00 NZST (Auckland, Wellington)", iana: "Pacific/Auckland" },
+            { label: "UTC+13:00 NZDT (Auckland, Wellington)", iana: "Pacific/Auckland" }
         ],
         region: ["APAC ", "Dubai ", "India ", "UK ", "ZA ", "North America ", "Philippines (APAC)", "Philippines (NA)", "Philippines (EMEA)"],
         eventStatus: ["Exists in Cornerstone", "Needs to be created in Cornerstone"],
@@ -1025,40 +795,113 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     let calendarCurrentDate = new Date(); 
     let calendarSessionMap = {};
 
+    // --- Undo/Redo State Engine ---
+    const MAX_HISTORY_STATES = 15;
+    let undoStack = [];
+    let redoStack = [];
+    let isRestoringState = false;
+
+    function recordStateSnapshot() {
+        if (isRestoringState || !activeSessionId) return;
+        saveCurrentUIIntoSession();
+        
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        if (!activeSession) return;
+
+        const currentStateStr = JSON.stringify({
+            sessionId: activeSession.sessionId,
+            state: { ...activeSession, selectedIdsArray: Array.from(activeSession.selectedIds) }
+        });
+        
+        if (undoStack.length > 0 && undoStack[undoStack.length - 1] === currentStateStr) return;
+        
+        undoStack.push(currentStateStr);
+        if (undoStack.length > MAX_HISTORY_STATES) undoStack.shift();
+        
+        redoStack = []; 
+        updateUndoRedoUI();
+    }
+
+    function executeUndo() {
+        if (undoStack.length === 0 || !activeSessionId) return;
+        saveCurrentUIIntoSession();
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        redoStack.push(JSON.stringify({
+            sessionId: activeSession.sessionId,
+            state: { ...activeSession, selectedIdsArray: Array.from(activeSession.selectedIds) }
+        }));
+        restoreSnapshot(undoStack.pop());
+    }
+
+    function executeRedo() {
+        if (redoStack.length === 0 || !activeSessionId) return;
+        saveCurrentUIIntoSession();
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        undoStack.push(JSON.stringify({
+            sessionId: activeSession.sessionId,
+            state: { ...activeSession, selectedIdsArray: Array.from(activeSession.selectedIds) }
+        }));
+        restoreSnapshot(redoStack.pop());
+    }
+
+    function restoreSnapshot(snapshotStr) {
+        isRestoringState = true;
+        try {
+            const snapshot = JSON.parse(snapshotStr);
+            const sessionIndex = sessions.findIndex(s => s.sessionId === snapshot.sessionId);
+            
+            if (sessionIndex > -1) {
+                sessions[sessionIndex] = snapshot.state;
+                sessions[sessionIndex].selectedIds = new Set(snapshot.state.selectedIdsArray || []);
+                activeSessionId = snapshot.sessionId;
+                loadSessionIntoUI(activeSessionId);
+                saveStateToLocalStorage();
+            }
+        } catch (e) { console.error("State restore failed", e); }
+        isRestoringState = false;
+        updateUndoRedoUI();
+    }
+
+    function updateUndoRedoUI() {
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+        if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+    }
+
     /* =====================================================================
        INITIALIZATION
        ===================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
         initThemeToggle();
         setupTabDragAndDrop();
+        updateUndoRedoUI();
+
+        // Keyboard Shortcut Bindings (Ctrl+Z / Cmd+Z and Ctrl+Y / Cmd+Y)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (!e.shiftKey) { e.preventDefault(); executeUndo(); } 
+                else { e.preventDefault(); executeRedo(); }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault(); executeRedo();
+            }
+        });
         
         populateSelectElement('paramB4', appLookups.orientation);
         populateSelectElement('paramB5', appLookups.cornerstoneTimezones.map(t => t.label));
         populateSelectElement('paramB6', appLookups.newHireTimezones.map(t => t.label));
         populateSelectElement('paramB7', appLookups.region);
+
         
-        // Dynamically inject ALL Templates into the dropdown
-        const dropdown = document.getElementById('templateProductDropdown');
-        dropdown.innerHTML = '<option value="">-- Select Corporate Template Track --</option>';
-        Object.keys(TEMPLATE_NAMES).forEach(templateKey => {
-            const opt = document.createElement('option');
-            opt.value = templateKey;
-            opt.textContent = TEMPLATE_NAMES[templateKey];
-            dropdown.appendChild(opt);
-        });
-        
-        // Restore local state & handle migration if necessary
         const savedState = localStorage.getItem('learningPlanMatrixSave');
         if (savedState) {
             try { 
                 const parsed = JSON.parse(savedState);
                 if (Array.isArray(parsed) && parsed.length > 0 && !parsed[0].hasOwnProperty('sessionId')) {
-                    // MIGRATION: Old save file detected (Array of rows instead of Array of sessions)
                     sessions = [ createNewSessionObject(parsed) ];
                 } else if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].hasOwnProperty('sessionId')) {
-                    // Valid multi-session load
                     sessions = parsed;
-                    // Rehydrate Sets
                     sessions.forEach(s => s.selectedIds = new Set(s.selectedIdsArray || []));
                     templateCounter = Math.max(...sessions.map(s => s.templateNum)) + 1;
                 } else {
@@ -1069,10 +912,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             sessions = [ createNewSessionObject() ];
         }
         
-        // Initialize Active Tab
         loadSessionIntoUI(sessions[0].sessionId);
 
-        // Name Sync Listener for active tab
         document.getElementById('metaPrideName').addEventListener('input', (e) => {
             const activeSession = sessions.find(s => s.sessionId === activeSessionId);
             if(activeSession) {
@@ -1082,11 +923,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         });
 
         document.getElementById('globalConfigGrid').addEventListener('change', runGlobalRecalculationEngine);
-        document.getElementById('templateProductDropdown').addEventListener('change', (e) => {
-            document.getElementById('importTemplateBtn').disabled = !e.target.value;
-        });
+        
 
-        // Horizontal Scrollbar Synchronization
         const topScroll = document.getElementById('topScrollContainer');
         const viewport = document.getElementById('matrixViewport');
         topScroll.addEventListener('scroll', () => { viewport.scrollLeft = topScroll.scrollLeft; });
@@ -1097,46 +935,41 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         setupViewportDragOverContainer();
         initCalendar();
 		
-        // 1. Prevent the browser's default behavior of opening the dropped file
-        window.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
+        window.addEventListener('dragover', (e) => { e.preventDefault(); });
 
-        // 2. Capture the dropped file and route it to your existing logic
         window.addEventListener('drop', (e) => {
             e.preventDefault();
-            
-            // Check if a file was actually dropped
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 const droppedFile = e.dataTransfer.files[0];
-                
-                // Ensure it's a spreadsheet format before processing
                 const validExtensions = ['.xlsx', '.xls', '.csv'];
                 const fileName = droppedFile.name.toLowerCase();
                 const isValid = validExtensions.some(ext => fileName.endsWith(ext));
                 
                 if (isValid) {
-                    // Package the file into a mock event object so your existing 
-                    // handleFileImport function can read it without needing any modifications
                     const mockEvent = { target: { files: [droppedFile], value: '' } };
                     handleFileImport(mockEvent);
                 } else {
-                    // Optional: Utilize your existing custom modal to warn the user
                     showCustomModal("Invalid file type. Please drop an .xlsx, .xls, or .csv file.", true);
                 }
             }
         });
 
-        // Load saved panel state on startup
         const savedPanelState = localStorage.getItem('controlPanelCollapsed');
         if (savedPanelState === 'true') {
             toggleControlPanel(true);
         }
         
-        // Bind the CRT Form pre-population click event
         const crtLinkElement = document.getElementById('crtFormLink');
         if (crtLinkElement) {
             crtLinkElement.addEventListener('click', launchPrepopulatedCRTForm);
+        }
+
+        const emailInput = document.getElementById('metaLPEmail');
+        if (emailInput) {
+            emailInput.value = localStorage.getItem('globalLPEmail') || '';
+            emailInput.addEventListener('input', (e) => {
+                localStorage.setItem('globalLPEmail', e.target.value);
+            });
         }
 
         runGlobalRecalculationEngine(); 
@@ -1150,7 +983,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const lightIcon = toggle.querySelector('.light-icon');
         const darkIcon = toggle.querySelector('.dark-icon');
         
-        // Check local storage or system preference
         const savedTheme = localStorage.getItem('appTheme');
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         
@@ -1194,10 +1026,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         msgEl.textContent = message;
 
-        // Handle the "Do not show again" checkbox visibility
         if (checkboxKey) {
             checkboxContainer.style.display = 'block';
-            checkbox.checked = false; // Reset it each time it opens
+            checkbox.checked = false;
         } else {
             checkboxContainer.style.display = 'none';
         }
@@ -1215,7 +1046,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         overlay.style.display = 'flex';
 
-        // Cleanup bindings
         const cleanup = () => {
             overlay.style.display = 'none';
             yesBtn.onclick = null;
@@ -1223,7 +1053,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         };
 
         yesBtn.onclick = () => {
-            // Save preference if the user checked the box
             if (checkboxKey && checkbox.checked) {
                 localStorage.setItem(checkboxKey, 'true');
             }
@@ -1326,6 +1155,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             }
         });
     }
+    
     function createNewSessionObject(initialDataset = []) {
         const id = generateId();
         const num = templateCounter++;
@@ -1342,6 +1172,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     function addNewTab() {
+        if (sessions.length >= 10) {
+            showCustomModal("You have reached the maximum limit of 10 tabs.", true);
+            return;
+        }
         saveCurrentUIIntoSession();
         const newSession = createNewSessionObject();
         sessions.push(newSession);
@@ -1355,13 +1189,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     function deleteTab(targetId, e) {
-        e.stopPropagation(); // Prevent tab switch
+        e.stopPropagation(); 
         if (sessions.length === 1) {
             showCustomModal("You cannot delete the last remaining template. You can clear the table instead.", true);
             return;
         }
         
         showCustomModal("Are you sure you want to delete this template workspace? This cannot be undone.", false, () => {
+            recordStateSnapshot();
             sessions = sessions.filter(s => s.sessionId !== targetId);
             if (activeSessionId === targetId) {
                 loadSessionIntoUI(sessions[sessions.length - 1].sessionId);
@@ -1377,7 +1212,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const activeSession = sessions.find(s => s.sessionId === activeSessionId);
         if (!activeSession) return;
 
-        // Save Config DOM Values
         activeSession.config = {
             prideName: document.getElementById('metaPrideName').value,
             roleTitle: document.getElementById('metaRoleTitle').value,
@@ -1390,9 +1224,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             lpOwner: document.getElementById('metaLPOwner').value
         };
 
-        // Datasets are updated in real-time via the DOM listeners, but we ensure pointers align
-        activeSession.dataset = workspaceDataset;
-        activeSession.selectedIds = selectedRowIds;
+        activeSession.dataset = [...workspaceDataset];
+        activeSession.selectedIds = new Set(selectedRowIds);
     }
 
     function loadSessionIntoUI(targetId) {
@@ -1401,7 +1234,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         activeSessionId = targetId;
 
-        // Load Config DOM Values
         document.getElementById('metaPrideName').value = targetSession.config.prideName || '';
         document.getElementById('metaRoleTitle').value = targetSession.config.roleTitle || '';
         document.getElementById('metaStartDate').value = targetSession.config.startDate || '';
@@ -1412,16 +1244,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         document.getElementById('metaProduct').value = targetSession.config.product || '';
         document.getElementById('metaLPOwner').value = targetSession.config.lpOwner || '';
 
-        // Reset Template UI
-        document.getElementById('templateProductDropdown').value = '';
-        document.getElementById('templateRoleDropdown').value = '';
-        document.getElementById('importTemplateBtn').disabled = true;
+        workspaceDataset = [...(targetSession.dataset || [])];
+        selectedRowIds = new Set(targetSession.selectedIds || []);
 
-        // Remap Pointers for active manipulation
-        workspaceDataset = targetSession.dataset;
-        selectedRowIds = targetSession.selectedIds || new Set();
-
-        // Reset Sort
         activeSortColumnKey = '';
         document.querySelectorAll('.sort-indicator').forEach(el => el.textContent = '↕');
 
@@ -1445,26 +1270,52 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             `;
         });
 
-        // Add the "+" Tab
-        container.innerHTML += `<div class="workspace-tab-add" onclick="addNewTab()" title="New Template">＋</div>`;
+        const atCap = sessions.length >= 10;
+        
+        if (atCap) {
+            container.innerHTML += `<div class="workspace-tab-add" style="opacity: 0.5; cursor: not-allowed;" title="Maximum of 10 tabs reached">＋</div>`;
+        } else {
+            container.innerHTML += `<div class="workspace-tab-add" onclick="addNewTab()" title="New Template">＋</div>`;
+        }
+        
+        const loadBtn = document.querySelector('button[onclick*="importSessionInput"]');
+        if (loadBtn) {
+            if (atCap) {
+                loadBtn.disabled = true;
+                loadBtn.style.opacity = '0.5';
+                loadBtn.style.cursor = 'not-allowed';
+                loadBtn.title = "Maximum of 10 tabs reached";
+            } else {
+                loadBtn.disabled = false;
+                loadBtn.style.opacity = '1';
+                loadBtn.style.cursor = 'pointer';
+                loadBtn.title = "";
+            }
+        }
     }
 
     function saveStateToLocalStorage() {
         saveCurrentUIIntoSession();
-        // Deep copy to handle Set to Array conversion for JSON stringify
         const safeSessions = sessions.map(s => ({
             ...s,
             selectedIdsArray: Array.from(s.selectedIds)
         }));
-        localStorage.setItem('learningPlanMatrixSave', JSON.stringify(safeSessions));
+        
+        try {
+            localStorage.setItem('learningPlanMatrixSave', JSON.stringify(safeSessions));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                showCustomModal("⚠️ Storage Limit Reached! Your browser has run out of local memory. Please click 'Save Session (.json)' to safely download your work, then delete a few unused tabs to free up space.", true);
+            } else {
+                console.error("Local storage error:", e);
+            }
+        }
     }
-
-
     /* =====================================================================
        WORKSPACE CORE FUNCTIONS
        ===================================================================== */
 
-// --- Smartsheet CRT Form Pre-population Subroutine ---
+    // --- Smartsheet CRT Form Pre-population Subroutine ---
     function launchPrepopulatedCRTForm(event) {
         event.preventDefault(); 
 
@@ -1472,12 +1323,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         
         // --- 1. Extract Raw Values from DOM ---
         const lpOwner = document.getElementById('metaLPOwner').value || "";
+        const lpEmail = document.getElementById('metaLPEmail').value || "";
         const prideName = document.getElementById('metaPrideName').value || "";
         const roleTitle = document.getElementById('metaRoleTitle').value || "";
         const region = document.getElementById('paramB7').value || "";
         const product = document.getElementById('metaProduct').value || "";
         const rawStartDate = document.getElementById('metaStartDate').value || "";
-        const orientation = document.getElementById('paramB4').value || ""; // NEW: Extract Orientation
+        const orientation = document.getElementById('paramB4').value || ""; 
 
         // Helper function: Convert app's YYYY-MM-DD to Smartsheet's required MM/DD/YYYY
         const formatForSmartsheet = (dateStr) => {
@@ -1488,7 +1340,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         };
 
         // --- 2. Calculate Derived Data ---
-
         // A. Present Date
         const today = new Date();
         const presentDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
@@ -1497,25 +1348,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const smartsheetStartDate = formatForSmartsheet(rawStartDate);
 
         // C. Max Date from Matrix Dataset (Last Live Session or Due Date)
-        let maxTimestamp = 0;
+        let maxDateString = "";
+        
         if (typeof workspaceDataset !== 'undefined') {
             workspaceDataset.forEach(row => {
-                if (row.liveSessionDate) {
-                    const ts = new Date(row.liveSessionDate).getTime();
-                    if (!isNaN(ts) && ts > maxTimestamp) maxTimestamp = ts;
+                if (row.liveSessionDate && row.liveSessionDate > maxDateString) {
+                    maxDateString = row.liveSessionDate;
                 }
-                if (row.dueDate) {
-                    const ts = new Date(row.dueDate).getTime();
-                    if (!isNaN(ts) && ts > maxTimestamp) maxTimestamp = ts;
+                if (row.dueDate && row.dueDate > maxDateString) {
+                    maxDateString = row.dueDate;
                 }
             });
         }
         
-        let maxDateFormatted = "";
-        if (maxTimestamp > 0) {
-            const maxDateObj = new Date(maxTimestamp);
-            maxDateFormatted = `${String(maxDateObj.getMonth() + 1).padStart(2, '0')}/${String(maxDateObj.getDate()).padStart(2, '0')}/${maxDateObj.getFullYear()}`;
-        }
+        const maxDateFormatted = maxDateString ? formatForSmartsheet(maxDateString) : "";
 
         // D. Excel Export Naming Convention Rule
         const safeRegion = (region || 'Reg').replace(/[^a-zA-Z0-9]+/g, '_');
@@ -1524,27 +1370,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const safeName = (prideName || 'Name').replace(/[^a-zA-Z0-9]/g, '_');
         const contentFileName = `${safeRegion}${safeProduct}_${safeRole}_${safeName}`;
 
-        // E. Notes/Questions Static Text (NEW)
-        // Extract just the YYYY from the raw HTML date, with fallbacks if fields are left empty
+        // E. Notes/Questions Static Text
         const startYear = rawStartDate ? rawStartDate.split('-')[0] : "YYYY";
         const safeOrientation = orientation || "ORIENTATION";
         const notesString = `File path is: ${startYear}/${safeOrientation}`;
 
         // --- 3. Construct URL Query String ---
-        // Using URLSearchParams safely handles all encoding (spaces to '+', special characters to '%')
         const params = new URLSearchParams();
         
         if (lpOwner) params.append('Your Name', lpOwner);
+        if (lpEmail) params.append('Your Email Address', lpEmail);
         if (presentDate) params.append('Desired Completion Date', presentDate);
         
-        params.append('Type of Request', 'Individual Learning Plan'); // Hardcoded string
+        params.append('Type of Request', 'Individual Learning Plan'); 
         
         if (smartsheetStartDate) params.append('New Hire Start Date', smartsheetStartDate);
         if (prideName) params.append('Employee Name(s)', prideName);
         if (maxDateFormatted) params.append('Training/Learning Plan Due Date', maxDateFormatted);
         if (contentFileName) params.append('Content File Name', contentFileName);
         
-        // Append the new Notes/Questions string
         params.append('Notes/Questions', notesString);
 
         // --- 4. Execution ---
@@ -1552,44 +1396,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         window.open(finalUrl, '_blank');
     }
 
-    // --- Template Import Subroutine ---
-    function applySelectedTemplate() {
-        const blueprintTrackKey = document.getElementById('templateProductDropdown').value;
-        if (!blueprintTrackKey) return;
+    
 
-        const rawCurriculumSourceBlock = TEMPLATE_DATABASE[blueprintTrackKey] || [];
-        
-        // Auto-map product title
-        document.getElementById('metaProduct').value = TEMPLATE_NAMES[blueprintTrackKey] || '';
-
-        rawCurriculumSourceBlock.forEach(cells => {
-            const isRowLiveType = cells[1] === "Live Session";
-            const rowType = cells[1];
-            // Auto-populate logic on import
-            const resolvedInstructor = (rowType === "eLearning" || rowType === "Video") ? "Self-led" : cells[2];
-            
-            workspaceDataset.push({
-                id: generateId(),
-                title: cells[0] || '', 
-                type: rowType || '', 
-                instructor: resolvedInstructor || '',
-                liveSessionDate: isRowLiveType ? '' : (cells[3] || ''), 
-                startTime: cells[4] || '', 
-                duration: cells[5] || '',
-                dueDate: cells[6] || '', 
-                eventStatus: '', 
-                locatorNumber: '',
-                additionalNotes: cells[7] || '', // Maps index 7 from the database
-                sessionTimezone: '', 
-                targetDateTime: '', 
-                lpOwnerNotes: ''
-            });
-        });
-
-        runGlobalRecalculationEngine();
-    }
-
-    // Utility to strip newlines and tabs from a single field to prevent breaking the TSV structure during copy
     function sanitizeForTSV(str) {
         if (!str) return '';
         return str.toString().replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ''); 
@@ -1612,7 +1420,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     function executeBulkAction(actionType) {
-        // Moved this to the top so all actions can use it
         const finalizeBulkAction = () => {
             selectedRowIds.clear();
             updateBulkActionBar();
@@ -1622,7 +1429,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         if (actionType === 'copy') {
             const rowsToCopy = workspaceDataset.filter(row => selectedRowIds.has(row.id));
             
-            // Map the rows strictly to the column layout expected by the paste listener
             const tsvData = rowsToCopy.map(row => {
                 return [
                     sanitizeForTSV(row.title),
@@ -1640,17 +1446,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             }).join('\n');
 
             navigator.clipboard.writeText(tsvData).then(() => {
-                // Check if user previously muted this alert
                 if (localStorage.getItem('muteCopyAlert') !== 'true') {
-                    // If NOT muted, clear selection immediately and show modal
                     finalizeBulkAction();
-                    
                     showCustomModal(
                         "✅ Copied successfully! Press Ctrl + V (or Cmd + V on Mac) to paste these rows into this table or another template tab.", 
                         true, null, null, null, null, 'muteCopyAlert' 
                     );
                 } else {
-                    // Fallback UX: If muted, keep the bar visible briefly
                     const btn = document.getElementById('copySelectedBtn');
                     const originalText = btn.textContent;
                     const originalBg = btn.style.background;
@@ -1658,12 +1460,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                     btn.textContent = '✓ Copied!';
                     btn.style.background = 'var(--success-color)';
                     
-                    // Delay the hiding of the bar and clearing of checkboxes by 1.5 seconds
                     setTimeout(() => {
                         btn.textContent = originalText;
                         btn.style.background = originalBg;
-                        
-                        // Hide the blue bar and clear checkboxes AFTER the delay
                         finalizeBulkAction(); 
                     }, 1500);
                 }
@@ -1677,25 +1476,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         }
 
         if (actionType === 'delete') {
-            // Check if exactly one row is selected
             if (selectedRowIds.size === 1) {
                 const singleRowId = Array.from(selectedRowIds)[0];
                 const singleRow = workspaceDataset.find(r => r.id === singleRowId);
                 const titleText = singleRow.title ? `"${singleRow.title}"` : "this untitled row";
                 
                 showCustomModal(`Are you sure you want to permanently delete ${titleText}?`, false, () => {
+                    recordStateSnapshot();
                     workspaceDataset = workspaceDataset.filter(row => !selectedRowIds.has(row.id));
                     finalizeBulkAction();
                 });
             } else {
-                // If multiple rows are selected, keep the plural message
                 showCustomModal(`Are you sure you want to permanently delete ${selectedRowIds.size} selected row(s)?`, false, () => {
+                    recordStateSnapshot();
                     workspaceDataset = workspaceDataset.filter(row => !selectedRowIds.has(row.id));
                     finalizeBulkAction();
                 });
             }
         } else if (actionType === 'keep') {
             showCustomModal(`Are you sure you want to keep ONLY the ${selectedRowIds.size} selected row(s) and delete everything else?`, false, () => {
+                recordStateSnapshot();
                 workspaceDataset = workspaceDataset.filter(row => selectedRowIds.has(row.id));
                 finalizeBulkAction();
             });
@@ -1706,9 +1506,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     function parseDurationToMinutes(str) {
         if (!str) return 0;
         let totalMins = 0;
-        // Looking for numbers associated with hours
         const hourMatch = str.match(/(\d*\.?\d+)\s*(?:h|hr|hrs|hour|hours)/i);
-        // Looking for numbers associated with minutes
         const minMatch = str.match(/(\d*\.?\d+)\s*(?:m|min|mins|minute|minutes)/i);
         
         if (hourMatch) totalMins += parseFloat(hourMatch[1]) * 60;
@@ -1726,7 +1524,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         
         while (curDate <= endDateObj) {
             const dayOfWeek = curDate.getDay();
-            // 0 is Sunday, 6 is Saturday
             if (dayOfWeek !== 0 && dayOfWeek !== 6) { count++; }
             curDate.setDate(curDate.getDate() + 1);
         }
@@ -1738,20 +1535,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         if (!panel) return;
         
         let typeCounts = {
-            eLearning: 0,
-            video: 0,
-            liveSession: 0,
-            quiz: 0,
-            material: 0,
-            external: 0,
-            curriculum: 0
+            eLearning: 0, video: 0, liveSession: 0, quiz: 0, material: 0, external: 0, curriculum: 0
         };
 
         let totalDurationMins = 0;
-        let maxDateTimestamp = 0;
+        let maxDateString = "";
 
         workspaceDataset.forEach(row => {
-            // Tally Types
             if (row.type === 'eLearning') typeCounts.eLearning++;
             else if (row.type === 'Video') typeCounts.video++;
             else if (row.type === 'Live Session') typeCounts.liveSession++;
@@ -1760,32 +1550,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             else if (row.type === 'Curriculum') typeCounts.curriculum++;
             else if (row.type === 'External Learning (no CSOD assignment)') typeCounts.external++;
 
-            // Accumulate Duration
             totalDurationMins += parseDurationToMinutes(row.duration);
 
-            // Find Max Date
-            if (row.liveSessionDate) {
-                const ts = new Date(row.liveSessionDate).getTime();
-                if (!isNaN(ts) && ts > maxDateTimestamp) maxDateTimestamp = ts;
-            }
-            if (row.dueDate) {
-                const ts = new Date(row.dueDate).getTime();
-                if (!isNaN(ts) && ts > maxDateTimestamp) maxDateTimestamp = ts;
-            }
+            if (row.liveSessionDate && row.liveSessionDate > maxDateString) maxDateString = row.liveSessionDate;
+            if (row.dueDate && row.dueDate > maxDateString) maxDateString = row.dueDate;
         });
 
-        // Calculate Learning Period
         const startDateStr = document.getElementById('metaStartDate').value;
         let periodDisplay = "N/A";
         
-        if (startDateStr && maxDateTimestamp > 0) {
+        if (startDateStr && maxDateString !== "") {
             const startDate = new Date(startDateStr);
-            const endDate = new Date(maxDateTimestamp);
+            const endDate = new Date(maxDateString);
             const bizDays = calculateBusinessDays(startDate, endDate);
             periodDisplay = `${bizDays} Day(s)`;
         }
 
-        // Format Total Duration
         const hours = Math.floor(totalDurationMins / 60);
         const mins = Math.floor(totalDurationMins % 60);
         let timeDisplay = "";
@@ -1828,7 +1608,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         } else {
             cal.style.display = 'flex';
             
-            // Auto-position dynamically next to the actions block on initialization
             if (!cal.dataset.moved) {
                 const actionsRect = document.getElementById('actionsPanel').getBoundingClientRect();
                 cal.style.bottom = 'auto';
@@ -1836,9 +1615,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 cal.style.left = (actionsRect.right + 24) + 'px';
                 cal.style.top = actionsRect.top + 'px';
                 
-                // Show structural hint UI overlay
                 hint.style.display = 'block';
-                void hint.offsetWidth; // Force internal CSS reflow 
+                void hint.offsetWidth; 
                 hint.style.opacity = '1';
                 
                 setTimeout(() => {
@@ -1916,7 +1694,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         
         tooltip.innerHTML = content;
         
-        // Apply the appropriate color theme based on the start date conflict
         if (isPreStart) {
             tooltip.classList.add('theme-red');
             tooltip.classList.remove('theme-blue');
@@ -1979,7 +1756,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             const mapKeyStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
             if (calendarSessionMap[mapKeyStr]) {
-                // Check if this session date occurs before the global start date
                 const isPreStart = globalStartDate && mapKeyStr < globalStartDate;
                 
                 if (isPreStart) {
@@ -1989,7 +1765,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                     dayDiv.classList.add('has-session');
                 }
                 
-                // Pass the isPreStart flag to the tooltip
                 dayDiv.addEventListener('mouseenter', (e) => showCalendarTooltip(e.target, calendarSessionMap[mapKeyStr], isPreStart));
                 dayDiv.addEventListener('mouseleave', hideCalendarTooltip);
             }
@@ -2032,6 +1807,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function sortTableByFieldColumn(fieldKey) {
         if (workspaceDataset.length <= 1) return;
+        recordStateSnapshot(); 
 
         if (activeSortColumnKey === fieldKey) {
             isCurrentSortDirectionAscending = !isCurrentSortDirectionAscending;
@@ -2063,7 +1839,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     document.addEventListener('paste', (e) => {
         if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
-            // Handle pasting specifically into the content editable notes cell
             if (document.activeElement.classList.contains('content-editable-cell')) {
                 e.preventDefault();
                 let text = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -2085,7 +1860,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             const isLive = type === "Live Session";
             const canHaveTime = type === "Live Session" || type === "External Learning (no CSOD assignment)";
             
-            // Auto-populate Logic
             const resolvedInstructor = (type === "eLearning" || type === "Video") ? "Self-led" : (cells[2] || '');
             
             workspaceDataset.push({
@@ -2120,6 +1894,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function executeChronologicalSort() {
         if (workspaceDataset.length <= 1) return;
+        recordStateSnapshot(); 
+        
         workspaceDataset.sort((rowA, rowB) => {
             const timeHHMM_A = (appLookups.startTimes.find(t => t.display === rowA.startTime) || {}).value || "00:00";
             const timeHHMM_B = (appLookups.startTimes.find(t => t.display === rowB.startTime) || {}).value || "00:00";
@@ -2142,80 +1918,28 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     function formatIncomingDateString(val) {
-        if (val === undefined || val === null) return '';
-        let strVal = String(val).trim();
-        if (strVal.toLowerCase() === 'n/a' || strVal === '') return '';
-
-        // 1. Intercept partial text strings missing year data (e.g., "29-Jun", "Jun-29", "29/06")
-        const partialDateRegex = /^(\d{1,2}[-\/][a-zA-Z]{3}|[a-zA-Z]{3}[-\/]\d{1,2}|\d{1,2}[-\/]\d{1,2})$/;
-        if (partialDateRegex.test(strVal)) {
-            let contextualYear = new Date().getFullYear();
-            const masterStartDateEl = document.getElementById('metaStartDate');
-            if (masterStartDateEl && masterStartDateEl.value) {
-                const parsedMaster = new Date(masterStartDateEl.value);
-                if (!isNaN(parsedMaster.getTime())) {
-                    contextualYear = parsedMaster.getFullYear();
-                }
-            }
-            // Append the inferred year to stabilize the native parser
-            strVal = `${strVal}-${contextualYear}`;
+        if (val === undefined || val === null || val === '') return '';
+        
+        if (!isNaN(val) && Number(val) > 20000 && Number(val) < 80000) {
+            const jsDate = new Date(Math.round((Number(val) - 25569) * 86400 * 1000));
+            return jsDate.toISOString().split('T')[0];
         }
 
-        // 2. Handle raw Excel Serial Numbers (e.g., 46202) bypassing string anomalies
-        if (/^\d+(\.\d+)?$/.test(strVal)) {
-            const serial = parseFloat(strVal);
-            const jsDate = new Date(Math.round((serial - 25569) * 86400 * 1000));
-            const yyyy = jsDate.getUTCFullYear();
-            const mm = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
-            const dd = String(jsDate.getUTCDate()).padStart(2, '0');
+        if (val instanceof Date && !isNaN(val.getTime())) {
+            return val.toISOString().split('T')[0];
+        }
+
+        const parsedTimestamp = Date.parse(String(val).trim());
+        if (!isNaN(parsedTimestamp)) {
+            const d = new Date(parsedTimestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // 3. Explicit handling of DD/MM/YYYY, MM/DD/YYYY, or YYYY-MM-DD
-        const parts = strVal.split(/[\/\-]/);
-        if (parts.length === 3) {
-            let year, month, day;
-
-            if (parts[0].length === 4) { // YYYY-MM-DD execution
-                year = parseInt(parts[0], 10);
-                month = parseInt(parts[1], 10);
-                day = parseInt(parts[2], 10);
-            } else if (parseInt(parts[0], 10) > 12) { // Strict DD/MM/YYYY detection
-                day = parseInt(parts[0], 10);
-                month = parseInt(parts[1], 10);
-                year = parseInt(parts[2], 10);
-            } else { // Ambiguous parameters - Default override to DD/MM/YYYY
-                if (parseInt(parts[1], 10) > 12) { 
-                    month = parseInt(parts[0], 10);
-                    day = parseInt(parts[1], 10);
-                    year = parseInt(parts[2], 10);
-                } else {
-                    day = parseInt(parts[0], 10);
-                    month = parseInt(parts[1], 10);
-                    year = parseInt(parts[2], 10);
-                }
-            }
-
-            // Two-digit year resolution (e.g., '26' -> 2026)
-            if (year < 100) year += (year < 50 ? 2000 : 1900);
-
-            if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-                return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            }
-        }
-
-        // 4. Fallback standard parsing for textual strings (e.g., "29-Jun-2026")
-        const timestamp = Date.parse(strVal);
-        if (isNaN(timestamp)) return '';
-        
-        // Explicit local time extraction blocking UTC shifts
-        const d = new Date(timestamp);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
+        return '';
     }
-
     function normalizeIncomingTimeString(val) {
         if (!val || val.trim() === '') return '';
         const match = appLookups.startTimes.find(t => t.display.toLowerCase() === val.trim().toLowerCase());
@@ -2242,68 +1966,91 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         workspaceDataset.forEach(row => {
             const canHaveTime = row.type === "Live Session" || row.type === "External Learning (no CSOD assignment)";
             row.sessionTimezone = canHaveTime ? b5Val : "";
+            
             if (!row.liveSessionDate || !row.startTime || !row.sessionTimezone || !b6Val) { 
                 row.targetDateTime = ""; 
+                row.outsideBusinessHours = false;
                 return; 
             }
 
             const targetTimeNode = appLookups.startTimes.find(t => t.display === row.startTime);
             if (!targetTimeNode || !b5Obj || !b6Obj) { 
                 row.targetDateTime = ""; 
+                row.outsideBusinessHours = false;
                 return; 
             }
 
             try {
-                // Warning: Static offset logic is subject to DST failure. 
-                const baseDateTime = new Date(`${row.liveSessionDate}T${targetTimeNode.value}:00`);
-                if (isNaN(baseDateTime.getTime())) throw new Error();
-                const netMinutesCorrection = b6Obj.offset - b5Obj.offset;
-                const evaluatedTimestamp = baseDateTime.getTime() + (netMinutesCorrection * 60 * 1000);
-                const targetDateObj = new Date(evaluatedTimestamp);
-                
-                row.targetDateTime = targetDateObj.toLocaleString('en-AU', {
-                    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true
-                });
-                
-                // --- SANITY CHECK LOGIC ---
-                // Check if the hour falls outside standard business hours (8 AM - 6 PM)
-                const targetHour = targetDateObj.getHours();
-                row.outsideBusinessHours = (targetHour < 8 || targetHour >= 18);
+                const anchorDate = new Date(`${row.liveSessionDate}T${targetTimeNode.value}:00Z`);
+                if (isNaN(anchorDate.getTime())) throw new Error();
 
-            } catch (e) { row.targetDateTime = ""; row.outsideBusinessHours = false; }
+                const getOffsetMins = (iana) => {
+                    const tzStr = anchorDate.toLocaleString("en-US", { timeZone: iana });
+                    const utcStr = anchorDate.toLocaleString("en-US", { timeZone: "UTC" });
+                    return (new Date(tzStr).getTime() - new Date(utcStr).getTime()) / 60000;
+                };
+
+                const hostOffset = getOffsetMins(b5Obj.iana);
+                const hireOffset = getOffsetMins(b6Obj.iana);
+                
+                const absoluteUTCTimestamp = anchorDate.getTime() - (hostOffset * 60 * 1000);
+                const hireLocalTimestamp = absoluteUTCTimestamp + (hireOffset * 60 * 1000);
+                const targetDateObj = new Date(hireLocalTimestamp);
+
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                const targetDay = days[targetDateObj.getUTCDay()];
+                const targetDateNum = targetDateObj.getUTCDate();
+                const targetMonth = months[targetDateObj.getUTCMonth()];
+                
+                let h = targetDateObj.getUTCHours();
+                const m = String(targetDateObj.getUTCMinutes()).padStart(2, '0');
+                const ampm = h >= 12 ? 'pm' : 'am';
+                h = h % 12;
+                h = h ? h : 12; 
+                const targetTimeStr = `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+
+                row.targetDateTime = `${targetDay}, ${targetDateNum} ${targetMonth}, ${targetTimeStr}`;
+                
+                const targetHour24 = targetDateObj.getUTCHours();
+                row.outsideBusinessHours = (targetHour24 < 8 || targetHour24 >= 18);
+
+            } catch (e) { 
+                row.targetDateTime = ""; 
+                row.outsideBusinessHours = false; 
+            }
         });
     }
 
-    // Modern Rich-Text and Markdown Link Parser
     function parseRichText(text) {
         if (!text) return '';
         let safeText = escapeHtml(text);
         
-        // 1. Parse Markdown format links: [Display Text](http://url.com)
-        const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g;
+        // Stricter regex ensuring protocols and preventing quote-escape injection
+        const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)<>]+)\)/gi;
         safeText = safeText.replace(mdLinkRegex, function(match, display, url) {
-            return `<a href="${url}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${display}</a>`;
+            const sanitizedUrl = url.replace(/"/g, '%22').replace(/'/g, '%27'); 
+            return `<a href="${sanitizedUrl}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${display}</a>`;
         });
 
-        // 2. Parse naked raw URLs that aren't already part of an HTML link tag
         const parts = safeText.split(/(<a\b[^>]*>.*?<\/a>)/gi);
         for (let i = 0; i < parts.length; i++) {
             if (!parts[i].toLowerCase().startsWith('<a')) {
-                parts[i] = parts[i].replace(/(^|\s)(https?:\/\/[^\s]+)/g, function(match, space, url) {
-                    return `${space}<a href="${url}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${url}</a>`;
+                parts[i] = parts[i].replace(/(^|\s)(https?:\/\/[^\s<>]+)/gi, function(match, space, url) {
+                    const sanitizedUrl = url.replace(/"/g, '%22').replace(/'/g, '%27');
+                    return `${space}<a href="${sanitizedUrl}" target="_blank" contenteditable="false" style="color: var(--accent-color); text-decoration: underline; cursor: pointer;">${url}</a>`;
                 });
             }
         }
         return parts.join('').replace(/\n/g, '<br>');
     }
 
-    // Pre-processing parser specifically tailored for exporting clean values and mapping link objects to XLSX output 
     function processTextForExcel(rawText) {
         if (!rawText) return '';
         let safeText = String(rawText);
         let embeddedUrl = null;
         
-        // Isolate primary URL if Markdown syntax is applied 
         const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/;
         const mdMatch = safeText.match(mdLinkRegex);
         
@@ -2311,7 +2058,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             safeText = safeText.replace(mdLinkRegex, '$1'); 
             embeddedUrl = mdMatch[2];
         } else {
-            // Isolate naked raw URL 
             const rawUrlRegex = /(https?:\/\/[^\s]+)/;
             const rawMatch = safeText.match(rawUrlRegex);
             if (rawMatch) {
@@ -2319,18 +2065,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             }
         }
 
-        // Global stripping rule to enforce clean string values across the entire string length 
         safeText = safeText.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '$1');
 
         if (embeddedUrl) {
-            // Structuring data for the SheetJS interpretation engine utilizing 'l' (link attributes)
             return { t: 's', v: safeText, l: { Target: embeddedUrl } };
         }
         
         return safeText;
     }
 
-    // --- Dynamic Reusable Styles Array ---
     const excelStyles = {
         fillWhite: { patternType: "solid", fgColor: { rgb: "FFFFFF" } },
         borderBottom: { bottom: { style: "thin", color: { rgb: "000000" } } },
@@ -2369,7 +2112,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         const sheetDataMatrix = [];
 
-        // Build Top Meta Section (Rows 1 to 12 / A1 to M12)
         for (let r = 0; r < 12; r++) {
             let rowArr = [];
             for (let c = 0; c < 13; c++) {
@@ -2381,7 +2123,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                         cellVal = rawTopValues[r][0];
                         cellStyle = excelStyles.styleLabel;
                     } else if (c === 1) {
-                        // If it's a template, leave the field blank for the user to fill in
                         cellVal = isTemplateMode ? "" : rawTopValues[r][1];
                         cellStyle = excelStyles.styleUnderline;
                     } else if (c === 2) {
@@ -2394,11 +2135,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             sheetDataMatrix.push(rowArr);
         }
 
-        // Build Table Headers (Row 13 / A13 to M13)
         const headers = ["Training Title", "Type", "Instructor", "Live Session Date", "Start Time", "Duration", "Due Date", "Event Status", "Locator Number", "Time Zone in Cornerstone", "Time zone of New Hire", "Additional Notes", "LP Owner Notes to Coordinator"];
         sheetDataMatrix.push(headers.map(h => ({ v: h, s: excelStyles.styleHeader })));
 
-        // Helper to format YYYY-MM-DD to DD-MMM-YYYY for Excel exports
         const formatForExcelDate = (dateStr) => {
             if (!dateStr) return '';
             const parts = dateStr.split('-');
@@ -2414,7 +2153,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             return dateStr;
         };
 
-        // Append Matrix Data Rows
         workspaceDataset.forEach(row => {
             let textTypeIdentifier = row.type || 'Unassigned';
             
@@ -2428,16 +2166,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             };
 
             const styledTypeCell = { v: textTypeIdentifier, s: typeCellStyle };
-
-            // Define standard wrap style for text-heavy columns
             const wrapStyle = { alignment: { wrapText: true, vertical: "top" } };
             
-            // Handle merging styles if processTextForExcel returns a link object
             const formatCellData = (rawOutput) => {
                 if (typeof rawOutput === 'object') {
-                    return { ...rawOutput, s: wrapStyle }; // Preserve link, add wrap
+                    return { ...rawOutput, s: wrapStyle }; 
                 }
-                return { v: rawOutput, s: wrapStyle }; // Standard string with wrap
+                return { v: rawOutput, s: wrapStyle }; 
             };
 
             sheetDataMatrix.push([
@@ -2457,7 +2192,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             ]);
         });
 
-        // Calculate Dynamic Column Widths
         const colWidths = new Array(13).fill(10);
         sheetDataMatrix.forEach(row => {
             for (let i = 0; i < 13; i++) {
@@ -2489,7 +2223,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         return { matrix: sheetDataMatrix, cols: finalCols };
     }
 
-    // --- Binary File Export Functions ---
     function generateAndDownloadBinaryXLSX() {
         const pName = document.getElementById('metaPrideName').value || '';
         const rTitle = document.getElementById('metaRoleTitle').value || '';
@@ -2527,7 +2260,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     function runGlobalRecalculationEngine() {
-        // Swap updated active pointers back to session core on every recalculation
         const activeSession = sessions.find(s => s.sessionId === activeSessionId);
         if (activeSession) {
             activeSession.dataset = workspaceDataset;
@@ -2535,11 +2267,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         calculateTimezoneProjections();
         updateBulkActionBar();
-        updateSummaryBlock(); // Regenerate Summary Metrics
+        updateSummaryBlock(); 
         renderWorkspaceView();
-        renderCalendar(); // Sync Calendar visual state with current dataset
+        renderCalendar(); 
         
-        // Save state locally
         saveStateToLocalStorage();
     }
 
@@ -2552,8 +2283,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
         if (workspaceDataset.length === 0) { 
             emptyState.style.display = 'block'; 
-            
-            // Sync top scrollbar dummy width
             const table = document.getElementById('matrixTable');
             document.getElementById('topScrollDummy').style.width = table.offsetWidth + 'px';
             return; 
@@ -2572,7 +2301,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             const isExternal = row.type === "External Learning (no CSOD assignment)";
             const canHaveTime = isLive || isExternal;
             
-            const fieldsDisabledClass = isLive ? '' : 'cell-disabled'; // Applies to CSOD specific fields (Status, Locator)
+            const fieldsDisabledClass = isLive ? '' : 'cell-disabled'; 
             
             const dateInputClass = canHaveTime ? (row.liveSessionDate ? '' : (isLive ? 'cell-required-empty' : '')) : (row.type === '' ? '' : 'cell-disabled');
             const timeInputClass = canHaveTime ? (row.startTime ? '' : (isLive ? 'cell-required-empty' : '')) : (row.type === '' ? '' : 'cell-disabled');
@@ -2645,7 +2374,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             tbody.appendChild(tr);
         });
 
-        // Sync top scrollbar dummy width
         const table = document.getElementById('matrixTable');
         document.getElementById('topScrollDummy').style.width = table.offsetWidth + 'px';
     }
@@ -2661,7 +2389,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             const record = workspaceDataset[index];
             if (!record) return;
 
-            // Handle content editable DIV vs standard inputs
             record[field] = e.target.value !== undefined ? e.target.value : e.target.innerText;
             
             if (e.target.value !== undefined && e.target.value.trim() !== '') e.target.classList.remove('cell-required-empty');
@@ -2702,12 +2429,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             }
         });
 
-        // Focus & Blur toggling to handle rich text/markdown
         tbody.addEventListener('focusin', (e) => {
             if (e.target.classList.contains('content-editable-cell')) {
                 const index = e.target.getAttribute('data-index');
                 const field = e.target.getAttribute('data-field');
-                // Revert to raw text (showing markdown) for clean editing
                 e.target.innerText = workspaceDataset[index][field] || '';
             }
         });
@@ -2716,21 +2441,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             if (e.target.classList.contains('content-editable-cell')) {
                 const index = e.target.getAttribute('data-index');
                 const field = e.target.getAttribute('data-field');
-                // Save any raw text typed to the dataset immediately
                 workspaceDataset[index][field] = e.target.innerText;
-                // Render the parsed HTML link display
                 e.target.innerHTML = parseRichText(workspaceDataset[index][field]);
             }
         });
 
-        // Handle Enter vs Shift+Enter in content editable cells
         tbody.addEventListener('keydown', (e) => {
             if (e.target.classList.contains('content-editable-cell') && e.key === 'Enter') {
-                // If Shift is held, do nothing (let the browser create a new line naturally)
                 if (e.shiftKey) {
                     return; 
                 }
-                // If it's just a regular Enter press, unfocus the cell (Excel-style)
                 e.preventDefault();
                 e.target.blur();
             }
@@ -2771,7 +2491,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                     }
                     if (isLive) { record.dueDate = ''; }
                     
-                    // Auto-populate logic on dropdown mutation
                     if (record.type === 'eLearning' || record.type === 'Video') {
                         record.instructor = 'Self-led';
                     } else if (record.instructor === 'Self-led') {
@@ -2787,7 +2506,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             }
         });
 
-        // Intercept clicking links so they open instead of focusing the cell
         tbody.addEventListener('mousedown', (e) => {
             if (e.target.tagName === 'A' && e.target.closest('.content-editable-cell')) {
                 e.preventDefault(); 
@@ -2804,11 +2522,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             const recordId = workspaceDataset[index].id;
             
             if (action === 'delete') {
-                // Grab the title from the specific row being targeted
                 const rowData = workspaceDataset[index];
                 const titleText = rowData.title ? `"${rowData.title}"` : "this untitled row";
 
                 showCustomModal(`Are you sure you want to delete ${titleText}?`, false, () => {
+                    recordStateSnapshot(); 
                     workspaceDataset.splice(index, 1);
                     selectedRowIds.delete(recordId);
                     runGlobalRecalculationEngine();
@@ -2871,12 +2589,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function clearWorkspace() { 
         showCustomModal("Are you sure you want to clear all data in this table? This cannot be undone.", false, () => {
+            recordStateSnapshot(); 
             workspaceDataset = []; 
             selectedRowIds.clear();
             
             document.getElementById('templateProductDropdown').value = '';
             document.getElementById('templateRoleDropdown').value = '';
-            // The metaProduct reset line has been removed
             document.getElementById('importTemplateBtn').disabled = true;
 
             runGlobalRecalculationEngine(); 
@@ -2884,6 +2602,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
     
     function escapeHtml(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+    const sanitizeRawInput = (val) => {
+        if (!val) return '';
+        let str = String(val).trim();
+        if (['=', '+', '-', '@'].includes(str.charAt(0))) {
+            str = "'" + str; 
+        }
+        return str;
+    };
 
     function handleFileImport(e) {
         const file = e.target.files[0];
@@ -2893,12 +2620,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         reader.onload = function(evt) {
             const data = new Uint8Array(evt.target.result);
             
-            // 1. Force the engine to parse Excel date serials as explicit Date objects, ignoring cell visual styles
             const workbook = XLSX.read(data, {type: 'array', cellDates: true});
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             
-            // 2. Coerce all extracted Date objects into a strict, unambiguous string format (YYYY-MM-DD)
             const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false, dateNF: 'yyyy-mm-dd'}); 
 
             const processTableData = () => {
@@ -2922,12 +2647,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
                     workspaceDataset.push({
                         id: generateId(),
-                        title: row[0] || '',
+                        title: sanitizeRawInput(row[0]),
                         type: type,
-                        instructor: instructor,
+                        instructor: sanitizeRawInput(instructor),
                         liveSessionDate: canHaveTime ? formatIncomingDateString(row[3]) : '', 
                         startTime: normalizeIncomingTimeString(row[4]),
-                        duration: row[5] || '',
+                        duration: sanitizeRawInput(row[5]),
                         dueDate: isLive ? '' : formatIncomingDateString(row[6]),
                         eventStatus: '',
                         locatorNumber: '',
@@ -2980,7 +2705,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         };
         reader.readAsArrayBuffer(file);
     }
-
     function generateAndTriggerPrintJob() {
         const prideName = document.getElementById('metaPrideName').value || '_______________________';
         const roleTitle = document.getElementById('metaRoleTitle').value || '_______________________';
@@ -2990,7 +2714,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const region = document.getElementById('paramB7').value || '';
         const startDateFormatted = startDateRaw ? new Date(startDateRaw).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '_______________________';
 
-        // 1. Construct the exact same filename string used in the XLSX export
         const safeRegion = (region || 'Reg').replace(/[^a-zA-Z0-9]+/g, '_');
         const safeProduct = (productVal !== '_______________________' ? productVal : 'Prod').replace(/[^a-zA-Z0-9]/g, '_');
         const safeRole = (roleTitle !== '_______________________' ? roleTitle : 'Role').replace(/[^a-zA-Z0-9]/g, '_');
@@ -3084,31 +2807,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             });
         }
         printHTML += `</tbody></table></div>`;
-
-        // --- THE IFRAME ISOLATION METHOD ---
         
-        // 1. Remove any existing iframe from previous print jobs to prevent browser freezing
         let oldIframe = document.getElementById('hiddenPrintFrame');
         if (oldIframe) {
             oldIframe.remove();
         }
 
-        // 2. Create a brand new, pristine iframe for this specific print job
         let printIframe = document.createElement('iframe');
         printIframe.id = 'hiddenPrintFrame';
         printIframe.style.position = 'absolute';
-        printIframe.style.top = '-9999px'; // Tuck it far off-screen
+        printIframe.style.top = '-9999px'; 
         printIframe.style.width = '0px';
         printIframe.style.height = '0px';
         printIframe.style.border = 'none';
         document.body.appendChild(printIframe);
 
         const iframeDoc = printIframe.contentWindow.document;
-        
-        // 2. Clone all CSS styles from the main page so your @media print rules carry over
         const pageStyles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
 
-        // 3. Write a brand new, clean HTML document directly into the hidden iframe
         iframeDoc.open();
         iframeDoc.write(`
             <!DOCTYPE html>
@@ -3126,40 +2842,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         `);
         iframeDoc.close();
 
-        // 4. Hijack the main document title (Chromium uses the parent title for iframe PDF exports)
         const originalTitle = document.title;
         document.title = dynamicFilename;
 
-        // 5. Wait 250ms for the iframe to finish painting, then print
         setTimeout(() => {
             printIframe.contentWindow.focus();
             
-            // Create a smart cleanup function that only triggers AFTER the dialog closes
             const cleanupPrintTitle = () => {
                 document.title = originalTitle;
                 printIframe.contentWindow.removeEventListener('afterprint', cleanupPrintTitle);
                 window.removeEventListener('focus', cleanupPrintTitle);
             };
             
-            // Listen for the native print dialog close event
             printIframe.contentWindow.addEventListener('afterprint', cleanupPrintTitle);
-            
-            // Fallback for Chrome/Edge: Restore title when the user clicks back to the main window
             window.addEventListener('focus', cleanupPrintTitle);
 
-            // Execute the print dialog
             printIframe.contentWindow.print();
             
         }, 250);
     }
-	// --- QUICK LINK COPY FUNCTION ---
+
     function copyQuickLink(btnElement, urlString) {
         navigator.clipboard.writeText(urlString).then(() => {
-            // Save original icon, swap to checkmark
             const originalIcon = btnElement.textContent;
             btnElement.textContent = '✅';
             
-            // Revert back after 1.5 seconds
             setTimeout(() => {
                 btnElement.textContent = originalIcon;
             }, 1500);
@@ -3177,12 +2884,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const rows = document.querySelectorAll('tr.matrix-row');
         
         rows.forEach(row => {
-            // Gather standard text and explicit input/select values
             const staticText = row.textContent.toLowerCase();
             const inputs = Array.from(row.querySelectorAll('input, select'));
             const dynamicValues = inputs.map(el => el.value.toLowerCase()).join(' ');
             
-            // Toggle visibility based on string match
             if (staticText.includes(query) || dynamicValues.includes(query)) {
                 row.style.display = '';
             } else {
@@ -3191,10 +2896,100 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         });
     }
 /* =====================================================================
+       JSON SESSION EXPORT & IMPORT (STATE SAVING)
+       ===================================================================== */
+    function exportWorkspaceStateToJSON() {
+        saveCurrentUIIntoSession(); // Ensure active DOM data is committed
+        
+        // Export ONLY the active tab to make it "tab session based"
+        const activeSession = sessions.find(s => s.sessionId === activeSessionId);
+        const safeSessions = [{
+            ...activeSession, 
+            selectedIdsArray: Array.from(activeSession.selectedIds)
+        }];
+        
+        // Convert to a JSON string and create a downloadable blob
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(safeSessions, null, 2));
+        const activePrideName = document.getElementById('metaPrideName').value || "Draft";
+        const downloadAnchorNode = document.createElement('a');
+        
+        // Updated naming convention to reflect single-tab saving
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `LP_Tab_${activePrideName.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+        document.body.appendChild(downloadAnchorNode); 
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    function importWorkspaceStateFromJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedSessions = JSON.parse(e.target.result);
+                
+                if (Array.isArray(importedSessions) && importedSessions.length > 0 && importedSessions[0].hasOwnProperty('sessionId')) {
+                    recordStateSnapshot(); 
+                    
+                    const currentActiveSession = sessions.find(s => s.sessionId === activeSessionId);
+                    const isUntouched = currentActiveSession && 
+                                        currentActiveSession.dataset.length === 0 && 
+                                        !currentActiveSession.config.prideName && 
+                                        !currentActiveSession.config.roleTitle && 
+                                        !currentActiveSession.config.startDate;
+                                        
+                    let targetSessionIdToLoad = null;
+                    let hitCapWarning = false;
+
+                    importedSessions.forEach((importedSession, index) => {
+                        if (index === 0 && isUntouched) {
+                            currentActiveSession.config = importedSession.config || {};
+                            currentActiveSession.dataset = importedSession.dataset || [];
+                            currentActiveSession.selectedIds = new Set(importedSession.selectedIdsArray || []);
+                            targetSessionIdToLoad = currentActiveSession.sessionId;
+                        } else {
+                            if (sessions.length < 10) {
+                                const newId = generateId();
+                                if (!targetSessionIdToLoad) targetSessionIdToLoad = newId;
+                                
+                                sessions.push({
+                                    sessionId: newId,
+                                    templateNum: templateCounter++, 
+                                    config: importedSession.config || {},
+                                    dataset: importedSession.dataset || [],
+                                    selectedIds: new Set(importedSession.selectedIdsArray || [])
+                                });
+                            } else {
+                                hitCapWarning = true;
+                            }
+                        }
+                    });
+                    
+                    loadSessionIntoUI(targetSessionIdToLoad || activeSessionId);
+                    saveStateToLocalStorage();
+                    
+                    if (hitCapWarning) {
+                        showCustomModal("✅ Data imported, but some tabs were skipped because the 10-tab limit was reached.", true);
+                    } else {
+                        showCustomModal("✅ Tab data imported successfully!", true);
+                    }
+                } else {
+                    showCustomModal("Invalid file format. Please ensure you are uploading a valid Learning Plan .json file.", true);
+                }
+            } catch(err) {
+                console.error("JSON Import Error:", err);
+                showCustomModal("Error reading the file. The file may be corrupted.", true);
+            }
+            event.target.value = ''; 
+        };
+        reader.readAsText(file);
+    }
+    /* =====================================================================
        GUIDED APP TOUR ENGINE (Driver.js)
        ===================================================================== */
     function promptAppTour() {
-        // Utilize your existing custom modal
         showCustomModal(
             "Would you like to take a quick guided tour of the Learning Plan Workspace features?", 
             false, 
@@ -3207,12 +3002,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function startGuidedTour() {
         try {
-            // 1. Ensure the control panel is expanded so users can see the highlighted elements
             if (document.getElementById('controlPanelWrapper').classList.contains('collapsed')) {
                 toggleControlPanel(false);
             }
 
-            // 2. Safely initialize Driver.js
             const driverConstructor = window.driver?.js?.driver || window.driver;
             
             if (!driverConstructor) {
@@ -3225,19 +3018,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 showProgress: true,
                 animate: true,
                 steps: [
-                    { element: '#workspaceTabsContainer', popover: { title: 'Workspace Tabs', description: 'Manage multiple learning plans at once. You can work on different candidates in separate tabs. Click the ＋ to add a new workspace.', side: "bottom", align: 'start' } },
-                    { element: '#globalConfigGrid', popover: { title: 'New Hire Profile Details', description: 'Enter your candidate metadata here. These details are tied to your active tab and will be included in your PDF and Excel exports.', side: "bottom", align: 'start' } },
-                    { element: '#controlPanelHeader', popover: { title: 'Collapsible Workspace', description: 'Need more room for the table? Click this header to collapse the control panels and maximize your screen space.', side: "bottom", align: 'start' } },
-                    { element: '.template-panel-flex', popover: { title: 'Curriculum Templates', description: 'Select a Product Track and Role Blueprint, then click Import. The table below will instantly populate with the standard curriculum.', side: "right", align: 'start' } },
-                    { element: '#actionsPanel', popover: { title: 'Action Center', description: 'Your core tools are here. Open the reference calendar, import files, auto-sort the schedule chronologically, or export your final product to Excel/PDF.', side: "left", align: 'start' } },
-                    { element: '#summaryPanel', popover: { title: 'Summary Metrics', description: 'As you build the learning plan, this panel updates in real-time to show the total duration of all modules and the overall learning period.', side: "left", align: 'start' } },
-                    { element: '#matrixSearchInput', popover: { title: 'Live Search', description: 'Quickly find specific modules or keywords. The matrix below will filter instantly as you type.', side: "bottom", align: 'start' } },
+                    { element: '#workspaceTabsContainer', popover: { title: 'Workspace Tabs', description: 'Manage multiple learning plans at once. You can drag and drop tabs to reorder them, or click the ＋ to add a new workspace.', side: "bottom", align: 'start' } },
+                    { element: '#globalConfigGrid', popover: { title: 'New Hire Profile Details', description: 'Enter your candidate metadata here. Your email address will be securely remembered for future sessions to save you time.', side: "bottom", align: 'start' } },
+                    { element: '#actionsPanel', popover: { title: 'Action Center & Templates', description: 'Power your workflow here: Use the Calendar to plan live sessions, insert custom rows, import existing spreadsheets, or trigger a clean print-out of the current plan.', side: "left", align: 'start' } },
+                    { element: 'button[onclick*="exportWorkspaceStateToJSON"]', popover: { title: 'Save & Load Templates', description: 'Click "Save Session" to download your plan as a .json file. This preserves all your data, notes, and settings. Use "Load Session" to import these files to quickly spin up new plans!', side: "right", align: 'start' } },
+					{ element: '#summaryPanel', popover: { title: 'Summary Metrics', description: 'As you build the learning plan, this panel updates in real-time to show the total duration of all modules and the overall learning period.', side: "left", align: 'start' } },
+                    { element: '#crtFormLink', popover: { title: 'Smart CRT Submission', description: 'Clicking this link will magically generate a custom Smartsheet URL that pre-fills the CRT form with all the candidate data you entered above!', side: "left", align: 'start' } },
+					{ element: '#matrixSearchInput', popover: { title: 'Live Search', description: 'Quickly find specific modules or keywords. The matrix below will filter instantly as you type.', side: "bottom", align: 'start' } },
                     { element: '#matrixTable', popover: { title: 'Interactive Matrix', description: 'This is the core schedule! Edit text directly, use the checkboxes for bulk actions, drag the ⋮⋮ handle to reorder, or hover over a row for duplicate/delete buttons.', side: "top", align: 'center' } },
-                    { element: '#themeToggle', popover: { title: 'Light/Dark Theme', description: 'Finally, toggle between Light and Dark mode to suit your preference. You are all set to start building!', side: "left", align: 'start' } }
+                    { element: '#undoBtn', popover: { title: 'Undo / Redo', description: 'Made a mistake, deleted a row, or ran a macro you didn\'t mean to? You can easily undo and redo your actions without losing your work.', side: "bottom", align: 'end' } },
+					{ element: '#themeToggle', popover: { title: 'Light/Dark Theme', description: 'Finally, toggle between Light and Dark mode to suit your preference. You are all set to start building!', side: "left", align: 'start' } }
                 ]
             });
 
-            // 3. Start the tour
             driverObj.drive();
             
         } catch (error) {
