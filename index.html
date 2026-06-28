@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan v1.00</title>
+    <title>Learning Plan v1.01</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -571,9 +572,19 @@
         <div class="middle-section-block">
             <div class="section-panel-label" style="justify-content: space-between; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 6px;">📊 Summary Metrics</div>
-                <button class="refresh-btn" onclick="runGlobalRecalculationEngine()" title="Recalculate Metrics">🔄</button>
+                <div style="display: flex; gap: 4px;">
+                    <button class="refresh-btn" onclick="setSummaryMode('text')" title="Text View">📄</button>
+                    <button class="refresh-btn" onclick="setSummaryMode('bar')" title="Bar Chart">📊</button>
+                    <button class="refresh-btn" onclick="setSummaryMode('pie')" title="Pie Chart">🥧</button>
+                    <button class="refresh-btn" onclick="runGlobalRecalculationEngine()" title="Recalculate Metrics">🔄</button>
+                </div>
             </div>
-            <div class="summary-panel" id="summaryPanel"></div>
+            <div class="summary-panel" id="summaryPanel" style="position: relative; height: 285px; padding: 16px;">
+                <div id="summaryTextPanel" style="display: flex; flex-direction: column; gap: 8px; width: 100%;"></div>
+                <div id="summaryChartPanel" style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;">
+                    <canvas id="metricsChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div class="middle-section-block">
@@ -1502,6 +1513,52 @@
         }
     }
 
+    /* --- Chart & Filtering Engine --- */
+    let currentSummaryMode = 'text';
+    let metricsChartInstance = null;
+
+    function setSummaryMode(mode) {
+        currentSummaryMode = mode;
+        const textPanel = document.getElementById('summaryTextPanel');
+        const chartPanel = document.getElementById('summaryChartPanel');
+        
+        if (mode === 'text') {
+            textPanel.style.display = 'flex';
+            chartPanel.style.display = 'none';
+        } else {
+            textPanel.style.display = 'none';
+            chartPanel.style.display = 'flex';
+            renderChart(mode);
+        }
+    }
+
+    function filterTableByChartSlice(label) {
+        const typeMap = {
+            'eLearning': ['eLearning'],
+            'Video': ['Video'],
+            'Live Session': ['Live Session'],
+            'Quizzes / Materials': ['Quiz', 'Material'],
+            'External / Curriculums': ['External Learning (no CSOD assignment)', 'Curriculum']
+        };
+        
+        const targetTypes = typeMap[label] || [];
+        const rows = document.querySelectorAll('tr.matrix-row');
+        
+        rows.forEach((row, idx) => {
+            const record = workspaceDataset[idx];
+            if (!record) return;
+            if (targetTypes.includes(record.type)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        const searchInput = document.getElementById('matrixSearchInput');
+        searchInput.placeholder = `Filtered by: ${label} (Clear to reset)`;
+        searchInput.value = '';
+    }
+
     // --- Summary & Analytics Logic ---
     function parseDurationToMinutes(str) {
         if (!str) return 0;
@@ -1531,13 +1588,10 @@
     }
 
     function updateSummaryBlock() {
-        const panel = document.getElementById('summaryPanel');
-        if (!panel) return;
+        const textPanel = document.getElementById('summaryTextPanel');
+        if (!textPanel) return;
         
-        let typeCounts = {
-            eLearning: 0, video: 0, liveSession: 0, quiz: 0, material: 0, external: 0, curriculum: 0
-        };
-
+        let typeCounts = { eLearning: 0, video: 0, liveSession: 0, quiz: 0, material: 0, external: 0, curriculum: 0 };
         let totalDurationMins = 0;
         let maxDateString = "";
 
@@ -1573,7 +1627,7 @@
         if (mins > 0 || hours === 0) timeDisplay += `${mins}m`;
         if (timeDisplay === "") timeDisplay = "0m";
 
-        panel.innerHTML = `
+        textPanel.innerHTML = `
             <div class="summary-row"><span>eLearning Modules</span> <span class="summary-val">${typeCounts.eLearning}</span></div>
             <div class="summary-row"><span>Video Modules</span> <span class="summary-val">${typeCounts.video}</span></div>
             <div class="summary-row"><span>Live Sessions</span> <span class="summary-val">${typeCounts.liveSession}</span></div>
@@ -1588,6 +1642,64 @@
         const miniPeriod = document.getElementById('miniStatPeriod');
         if (miniTime) miniTime.textContent = timeDisplay;
         if (miniPeriod) miniPeriod.textContent = periodDisplay;
+
+        window.chartDataPayload = {
+            labels: ['eLearning', 'Video', 'Live Session', 'Quizzes / Materials', 'External / Curriculums'],
+            data: [
+                typeCounts.eLearning, 
+                typeCounts.video, 
+                typeCounts.liveSession, 
+                typeCounts.quiz + typeCounts.material, 
+                typeCounts.external + typeCounts.curriculum
+            ]
+        };
+
+        if (currentSummaryMode !== 'text') {
+            renderChart(currentSummaryMode);
+        }
+    }
+
+    function renderChart(type) {
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        if (metricsChartInstance) { metricsChartInstance.destroy(); }
+
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const textColor = currentTheme === 'dark' ? '#f8fafc' : '#1e293b';
+
+        metricsChartInstance = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: window.chartDataPayload.labels,
+                datasets: [{
+                    label: 'Modules',
+                    data: window.chartDataPayload.data,
+                    backgroundColor: ['#bbd437', '#bbd437', '#3079c3', '#e87331', '#00b188'],
+                    borderWidth: 1,
+                    borderColor: currentTheme === 'dark' ? '#1e293b' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: type === 'pie', position: 'right', labels: { color: textColor, font: { size: 11 } } }
+                },
+                scales: type === 'bar' ? {
+                    y: { beginAtZero: true, ticks: { color: textColor, stepSize: 1 } },
+                    x: { ticks: { color: textColor, font: { size: 10 } } }
+                } : {},
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const dataIndex = elements[0].index;
+                        const label = window.chartDataPayload.labels[dataIndex];
+                        filterTableByChartSlice(label);
+                    }
+                },
+                onHover: (event, chartElement) => {
+                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                }
+            }
+        });
     }
 
     // --- Floating Calendar Widget Logic ---
@@ -2592,10 +2704,6 @@
             recordStateSnapshot(); 
             workspaceDataset = []; 
             selectedRowIds.clear();
-            
-            document.getElementById('templateProductDropdown').value = '';
-            document.getElementById('templateRoleDropdown').value = '';
-            document.getElementById('importTemplateBtn').disabled = true;
 
             runGlobalRecalculationEngine(); 
         });
