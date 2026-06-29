@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan v1.01</title>
+    <title>Learning Plan v1.02</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
@@ -409,8 +409,8 @@
         .table-input:hover { border-color: var(--border-color); background-color: var(--input-bg); }
         .table-input:focus { border-color: var(--accent-color); background-color: var(--input-bg); outline: none; }
 
-        div.table-input.content-editable-cell {
-            display: block; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--border-color); background-color: var(--input-bg); border-radius: 4px; min-height: 30px; max-height: 80px; padding: 4px 8px;
+div.table-input.content-editable-cell {
+            display: block; height: auto; overflow: hidden; white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--border-color); background-color: var(--input-bg); border-radius: 4px; min-height: 30px; padding: 4px 8px;
         }
         div.table-input.content-editable-cell::-webkit-scrollbar { display: none; }
         div.table-input.content-editable-cell:empty:before { content: attr(data-placeholder); color: var(--text-secondary); }
@@ -579,7 +579,7 @@
                     <button class="refresh-btn" onclick="runGlobalRecalculationEngine()" title="Recalculate Metrics">🔄</button>
                 </div>
             </div>
-            <div class="summary-panel" id="summaryPanel" style="position: relative; height: 285px; padding: 16px;">
+            <div class="summary-panel" id="summaryPanel" style="position: relative; height: 100%; padding: 16px;">
                 <div id="summaryTextPanel" style="display: flex; flex-direction: column; gap: 8px; width: 100%;"></div>
                 <div id="summaryChartPanel" style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;">
                     <canvas id="metricsChart"></canvas>
@@ -613,14 +613,14 @@
             </div>
         </div>
         </div>
-    <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: center; position: relative;">
-        <div class="search-wrapper" style="position: relative; flex-shrink: 0; width: 300px;">
+    <div style="display: flex; gap: 16px; margin-top: 16px; margin-bottom: 16px; align-items: center; position: relative;">
+        <div class="search-wrapper" style="position: relative; flex-shrink: 0; width: 300px; margin-left: 20px;">
             <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             <input type="text" id="matrixSearchInput" class="table-input" style="width: 100%; padding: 8px 16px 8px 38px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--input-bg); font-size: 13px; transition: border-color 0.2s, box-shadow 0.2s; height: 36px;" placeholder="Search all rows..." onkeyup="executeLiveSearch()">
         </div>
         
         <div style="position: relative; flex-grow: 1;">
-            <div class="paste-notice" style="margin-bottom: 0;">
+            <div class="paste-notice" style="margin-bottom: 10px;">
                 💡 <strong>Interactive Table:</strong> Select rows to copy/delete. Duplicate rows, or type <code>[Link Text](https://url.com)</code> in notes to embed links.
             </div>
 
@@ -2461,7 +2461,7 @@
                         ${appLookups.courseTypes.map(type => `<option value="${type}" ${row.type === type ? 'selected' : ''} style="background-color: var(--input-bg); color: var(--text-primary);">${type}</option>`).join('')}
                     </select>
                 </td>
-                <td class="col-instructor"><input type="text" class="table-input ${instructorInputClass}" value="${escapeHtml(row.instructor)}" data-index="${idx}" data-field="instructor" placeholder="Instructor..."></td>
+                <td class="col-instructor"><input type="text" class="table-input ${instructorInputClass}" value="${escapeHtml(row.instructor)}" title="${escapeHtml(row.instructor)}" data-index="${idx}" data-field="instructor" placeholder="Instructor..."></td>
                 <td class="col-date"><div class="${dateContainerClass}"><input type="date" class="table-input ${dateInputClass}" value="${row.liveSessionDate}" data-index="${idx}" data-field="liveSessionDate" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}></div></td>
                 <td class="col-time">
                     <select class="table-input table-input-darktext pill-dropdown time-select ${timeInputClass}" data-index="${idx}" data-field="startTime" ${!canHaveTime && row.type !== '' ? 'disabled' : ''}>
@@ -2506,7 +2506,7 @@
             if (e.target.value !== undefined && e.target.value.trim() !== '') e.target.classList.remove('cell-required-empty');
             else if (e.target.innerText && e.target.innerText.trim() !== '') e.target.classList.remove('cell-required-empty');
 
-            if (field === 'title') {
+            if (field === 'title' || field === 'instructor') {
                 e.target.title = e.target.value;
             }
 
