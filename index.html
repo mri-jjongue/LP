@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Plan v1.02</title>
+    <title>Learning Plan v1.03</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
@@ -36,7 +36,7 @@
             --hover-bg-subtle: #f1f5f9;
             
             /* Conditional Formatting Palette */
-            --valid-green-bg: #f0fdf4;
+            --valid-green-bg: #c7d8e5;
             --valid-green-text: #166534;
             --valid-green-border: #bbf7d0;
             --error-red-required: #ffcccc;
@@ -471,7 +471,7 @@ div.table-input.content-editable-cell {
 
             .page-break-wrapper { page-break-after: always !important; break-after: page !important; display: block !important; width: 100%; height: 100vh; overflow: hidden; }
 
-            .print-cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #0b2545 !important; color: #ffffff !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #d7ebf5 !important; color: #ffffff !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .cover-title-brand { font-size: 20px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 20px; color: #8da9c4 !important; text-align: center; }
             .cover-main-header { font-size: 48px; font-weight: 800; margin: 0 0 40px 0; border-bottom: 3px solid rgba(255,255,255,0.2); padding-bottom: 24px; width: 85%; max-width: 800px; text-align: center; text-transform: uppercase; }
             .cover-metadata-card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); padding: 32px 48px; border-radius: 12px; width: 70%; max-width: 600px; }
@@ -2816,11 +2816,17 @@ div.table-input.content-editable-cell {
     function generateAndTriggerPrintJob() {
         const prideName = document.getElementById('metaPrideName').value || '_______________________';
         const roleTitle = document.getElementById('metaRoleTitle').value || '_______________________';
-        const startDateRaw = document.getElementById('metaStartDate').value;
+const startDateRaw = document.getElementById('metaStartDate').value;
         const productVal = document.getElementById('metaProduct').value || '_______________________';
         const lpOwner = document.getElementById('metaLPOwner').value || '_______________________';
         const region = document.getElementById('paramB7').value || '';
-        const startDateFormatted = startDateRaw ? new Date(startDateRaw).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '_______________________';
+        
+        let startDateFormatted = '_______________________';
+        if (startDateRaw) {
+            const [yyyy, mm, dd] = startDateRaw.split('-');
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            startDateFormatted = `${parseInt(dd, 10)} ${monthNames[parseInt(mm, 10) - 1]} ${yyyy}`;
+        }
 
         const safeRegion = (region || 'Reg').replace(/[^a-zA-Z0-9]+/g, '_');
         const safeProduct = (productVal !== '_______________________' ? productVal : 'Prod').replace(/[^a-zA-Z0-9]/g, '_');
@@ -3145,6 +3151,7 @@ div.table-input.content-editable-cell {
             console.error("Tour Error:", error);
         }
     }
+	
 </script>
 </body>
 </html>
