@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Designer Pro - Trainer Learning Plan Creator</title>
+    <meta name="description"
+        content="LP Designer Pro: The professional tool for trainer-led learning plan creation and precision milestone scheduling.">
+    <link rel="icon" type="image/png" href="assets/trend_watermark.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600&family=Sora:wght@700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(226, 232, 240, 0.8);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --color-accent: #2563eb;
+            --color-accent-hover: #1d4ed8;
+            --shadow-subtle: 0 4px 30px rgba(0, 0, 0, 0.02);
+            --shadow-premium: 0 20px 50px rgba(13, 59, 102, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 24px;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, rgba(5, 168, 170, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* Watermark Background */
+        .bg-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%;
+            max-width: 800px;
+            opacity: 0.04;
+            z-index: -1;
+            pointer-events: none;
+            user-select: none;
+            animation: pulse-watermark 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-watermark {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.04;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.03);
+                opacity: 0.06;
+            }
+        }
+
+        /* Top Brand Header */
+        header {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: center;
+            /* Aligned logo back to center */
+            align-items: center;
+            margin-bottom: 4px;
+            /* Brought closer to the title container */
+            animation: fade-in-down 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .mri-brand-logo {
+            max-width: 100%;
+            height: 95px;
+            /* Increased size by 30% from 73px */
+            width: auto;
+            opacity: 0.8;
+            /* Set opacity to 80% */
+            transition: opacity 0.3s ease;
+        }
+
+        .mri-brand-logo:hover {
+            opacity: 1;
+        }
+
+        /* Main Container Card */
+        main {
+            width: 100%;
+            max-width: 680px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 56px 40px;
+            text-align: center;
+            box-shadow: var(--shadow-subtle), var(--shadow-premium);
+            z-index: 10;
+            animation: scale-up-fade 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Brand Title styling */
+        h1 {
+            font-family: 'Sora', sans-serif;
+            font-size: 3.9rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #0f172a 20%, #1e40af 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 auto 6px auto;
+            line-height: 1.1;
+            display: block;
+            width: fit-content;
+        }
+
+        .app-tagline {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin: 0 auto 40px auto;
+            display: block;
+            width: fit-content;
+        }
+
+        /* Logo Container */
+        .logo-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .app-logo {
+            height: 156px;
+            width: auto;
+            display: block;
+        }
+
+        /* Launch Action Button */
+        .btn-container {
+            margin-bottom: 12px;
+        }
+
+        .launch-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 240px;
+            height: 52px;
+            border: none;
+            padding: 0 24px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            border-radius: 8px;
+            background-color: var(--color-accent) !important;
+            --btn-shadow: #1e3a8a;
+            box-shadow: 4px 4px 0px var(--btn-shadow);
+            transition: all 0.2s ease-in-out;
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            text-decoration: none;
+            color: #ffffff !important;
+        }
+
+        .launch-btn .btn-text {
+            color: #ffffff;
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+            display: inline-block;
+        }
+
+        .launch-btn .btn-icon {
+            position: absolute;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease-in-out;
+            pointer-events: none;
+        }
+
+        .launch-btn:hover:not(:disabled) {
+            background-color: var(--color-accent-hover) !important;
+        }
+
+        .launch-btn:hover:not(:disabled) .btn-text {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .launch-btn:hover:not(:disabled) .btn-icon {
+            right: calc(50% - 10px);
+            /* Center icon horizontally */
+            transform: scale(1.2);
+        }
+
+        .launch-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--btn-shadow);
+        }
+
+        /* Features Section */
+        .features-section {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 48px;
+            animation: fade-in-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: #ffffff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border-color: rgba(37, 99, 235, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+            display: inline-block;
+            filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.1));
+        }
+
+        .feature-card h3 {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Footer Branding */
+        footer {
+            width: 100%;
+            max-width: 1100px;
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(226, 232, 240, 0.6);
+            animation: fade-in 1s ease 0.4s both;
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        /* Animations */
+        @keyframes fade-in-down {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scale-up-fade {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            main {
+                padding: 40px 24px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            body {
+                padding: 24px 16px;
+            }
+
+            .bg-watermark {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .features-section {
+                max-width: 90%;
+            }
+        }
+
+        /* Subtle High-Performance Transition Overlay */
+        .portal-transition-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            background: rgba(248, 250, 252, 0);
+            pointer-events: none;
+            transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            will-change: background-color;
+        }
+
+        .portal-transition-container.active {
+            background: rgba(248, 250, 252, 1);
+            pointer-events: all;
+        }
+
+        [data-theme="dark"] .portal-transition-container.active {
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .transition-logo-wrapper {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                left 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                top 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, left, top, opacity;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Watermark Brand Graphic -->
+    <img class="bg-watermark" src="assets/trend_watermark.png" alt="" aria-hidden="true">
+
+    <!-- Top Corporate Branding -->
+    <header>
+        <img class="mri-brand-logo" src="assets/mri_lp_logo.png" alt="MRI Learning Plan Logo" />
+    </header>
+
+    <!-- Main Splash Card -->
+    <main>
+        <h1>LP Designer Pro</h1>
+        <p class="app-tagline">Precision scheduling for complex learning paths.
+
+        </p>
+
+        <div class="logo-wrapper">
+            <img class="app-logo" src="assets/trend_watermark.png" alt="LP Designer Pro Branding Logo">
+        </div>
+
+        <div class="btn-container">
+            <a href="v1.12.html" class="launch-btn" id="launchAppBtn" aria-label="Launch LP Designer Pro Application">
+                <span class="btn-text">Launch Workspace</span>
+                <span class="btn-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Secondary Product Features Overview -->
+    <section class="features-section" aria-label="Key Product Features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">⏱️</div>
+                <h3>Chronometric Scheduling</h3>
+                <p>Instantly calculate dates and timelines, reducing learning plan creation times from hours to seconds.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🔌</div>
+                <h3>EMS Importer</h3>
+                <p>Directly ingest EMS Notifications, drastically speeding up new hire profile imports and data
+                    accuracy.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">💾</div>
+                <h3>Workspace Templates</h3>
+                <p>Save and load entire learning plan session files to reuse setups and preserve past scheduling states.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">✉️</div>
+                <h3>Automated Workflows</h3>
+                <p>Streamline manager and new-hire communication with pre-populated email templates and one-click CRT
+                    submission forms.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page Footer -->
+    <footer>
+        <p class="footer-text">Education Services &bull; MRI Software &copy; 2026. All rights reserved.</p>
+        <p class="footer-text" style="margin-top: 4px; font-weight: 600; opacity: 0.9;">Created by: Joe Jongue</p>
+    </footer>
+
+    <!-- Subtle Portal Transition Overlay -->
+    <div id="portal-transition" class="portal-transition-container pointer-events-none"></div>
+
+    <script>
+        document.getElementById('launchAppBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetUrl = this.getAttribute('href');
+
+            const portal = document.getElementById('portal-transition');
+            portal.classList.add('active');
+
+            // Get current splash logo coordinates
+            const splashLogo = document.querySelector('.app-logo');
+            const rect = splashLogo.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
+            const startWidth = rect.width;
+
+            // Create overlay elements matching splash coordinates
+            const logoWrapper = document.createElement('div');
+            logoWrapper.className = 'transition-logo-wrapper';
+            logoWrapper.style.position = 'fixed';
+            logoWrapper.style.left = `${startX}px`;
+            logoWrapper.style.top = `${startY}px`;
+            logoWrapper.style.width = `${startWidth}px`;
+            logoWrapper.style.transform = 'translate(-50%, -50%) scale(1)';
+            logoWrapper.style.opacity = '1';
+            logoWrapper.style.pointerEvents = 'none';
+            logoWrapper.style.zIndex = '10001';
+
+            const logoImg = document.createElement('img');
+            logoImg.src = 'assets/trend_watermark.png';
+            logoImg.style.width = '100%';
+            logoImg.style.height = 'auto';
+
+            logoWrapper.appendChild(logoImg);
+            portal.appendChild(logoWrapper);
+
+            // Animate scale zoom-in past the viewer and fade out
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    logoWrapper.style.left = '50vw';
+                    logoWrapper.style.top = '50vh';
+                    logoWrapper.style.transform = 'translate(-50%, -50%) scale(4.5)';
+                    logoWrapper.style.opacity = '0';
+                });
+            });
+
+            // hardware-accelerated fade and zoom redirection delay
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 600);
+        });
+
+        // Self-contained logic to dynamically align the title text width with the tagline text width
+        (function () {
+            const alignTitleWithTagline = () => {
+                try {
+                    const title = document.querySelector('main h1');
+                    const tagline = document.querySelector('main .app-tagline');
+                    if (!title || !tagline) return;
+
+                    // Reset letter-spacing to calculate natural width
+                    title.style.letterSpacing = '';
+
+                    const taglineWidth = tagline.getBoundingClientRect().width;
+                    const titleWidth = title.getBoundingClientRect().width;
+
+                    if (taglineWidth > titleWidth) {
+                        const titleText = (title.textContent || '').trim();
+                        const numGaps = titleText.length - 1;
+                        if (numGaps > 0) {
+                            const extraSpace = taglineWidth - titleWidth;
+                            const additionalSpacing = extraSpace / numGaps;
+                            
+                            // Get initial negative letter spacing if any (e.g. -0.03em)
+                            const computedStyle = window.getComputedStyle(title);
+                            const initialSpacing = parseFloat(computedStyle.letterSpacing) || 0;
+                            
+                            title.style.letterSpacing = `${initialSpacing + additionalSpacing}px`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error during title-tagline alignment:', error);
+                }
+            };
+
+            // Run alignment on DOMContentLoaded, page load, and resize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', alignTitleWithTagline);
+            } else {
+                alignTitleWithTagline();
+            }
+            window.addEventListener('load', alignTitleWithTagline);
+            window.addEventListener('resize', alignTitleWithTagline);
+        })();
+    </script>
+
+</body>
+
+</html>
