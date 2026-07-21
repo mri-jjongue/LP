@@ -5624,7 +5624,15 @@
 
                     if (sortKeyA !== sortKeyB) return sortKeyA < sortKeyB ? -1 : 1;
 
-                    // Same date (or both undated): preserve the user's original row order
+                    // Same effective date: if BOTH rows have a live date AND a start time,
+                    // sort the earlier start time first (e.g. 1:30 PM before 3:00 PM).
+                    if (rowA.liveSessionDate && rowA.startTime && rowB.liveSessionDate && rowB.startTime) {
+                        const timeA = (appLookups.startTimes.find(t => t.display === rowA.startTime) || {}).value || '';
+                        const timeB = (appLookups.startTimes.find(t => t.display === rowB.startTime) || {}).value || '';
+                        if (timeA && timeB && timeA !== timeB) return timeA < timeB ? -1 : 1;
+                    }
+
+                    // Otherwise preserve the user's original row order
                     return itemA.originalPosition - itemB.originalPosition;
                 });
 
