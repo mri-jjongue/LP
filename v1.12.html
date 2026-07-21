@@ -5602,26 +5602,37 @@
                     const rowA = itemA.row;
                     const rowB = itemB.row;
 
-                    const timeHHMM_A = (appLookups.startTimes.find(t => t.display === rowA.startTime) || {}).value || "00:00"; // KEEP UNCHANGED
-                    const timeHHMM_B = (appLookups.startTimes.find(t => t.display === rowB.startTime) || {}).value || "00:00"; // KEEP UNCHANGED
+                    // Compare by date only (no time component) so that rows sharing
+                    // the same calendar date are always treated as ties, regardless of
+                    // whether one has a start time and the other does not.
+                    const liveDateA = rowA.liveSessionDate || '';
+                    const liveDateB = rowB.liveSessionDate || '';
+                    const dueDateA = rowA.dueDate || '';
+                    const dueDateB = rowB.dueDate || '';
 
-                    const liveTimestampA = rowA.liveSessionDate ? new Date(`${rowA.liveSessionDate}T${timeHHMM_A}:00`).getTime() : Infinity; // KEEP UNCHANGED
-                    const liveTimestampB = rowB.liveSessionDate ? new Date(`${rowB.liveSessionDate}T${timeHHMM_B}:00`).getTime() : Infinity; // KEEP UNCHANGED
-                    const dueTimestampA = rowA.dueDate ? new Date(`${rowA.dueDate}T${timeHHMM_A}:00`).getTime() : Infinity; // KEEP UNCHANGED
-                    const dueTimestampB = rowB.dueDate ? new Date(`${rowB.dueDate}T${timeHHMM_B}:00`).getTime() : Infinity; // KEEP UNCHANGED
+                    const getEffectiveDate = (liveDate, dueDate) => {
+                        if (liveDate && dueDate) return liveDate <= dueDate ? liveDate : dueDate;
+                        return liveDate || dueDate || '';
+                    };
 
-                    const virtualColZ_A = Math.min(liveTimestampA, dueTimestampA); // KEEP UNCHANGED
-                    const virtualColZ_B = Math.min(liveTimestampB, dueTimestampB); // KEEP UNCHANGED
+                    const effectiveDateA = getEffectiveDate(liveDateA, dueDateA);
+                    const effectiveDateB = getEffectiveDate(liveDateB, dueDateB);
 
-                    if (virtualColZ_A !== virtualColZ_B) return virtualColZ_A - virtualColZ_B;
+                    // Rows with no date sort to the end
+                    const sortKeyA = effectiveDateA || '\uFFFF';
+                    const sortKeyB = effectiveDateB || '\uFFFF';
 
-                    if (virtualColZ_A !== Infinity) {
-                        const titleCompare = (rowA.title || '').localeCompare(rowB.title || '');
-                        if (titleCompare !== 0) {
-                            return titleCompare;
-                        }
+                    if (sortKeyA !== sortKeyB) return sortKeyA < sortKeyB ? -1 : 1;
+
+                    // Same effective date: if BOTH rows have a live date AND a start time,
+                    // sort the earlier start time first (e.g. 1:30 PM before 3:00 PM).
+                    if (rowA.liveSessionDate && rowA.startTime && rowB.liveSessionDate && rowB.startTime) {
+                        const timeA = (appLookups.startTimes.find(t => t.display === rowA.startTime) || {}).value || '';
+                        const timeB = (appLookups.startTimes.find(t => t.display === rowB.startTime) || {}).value || '';
+                        if (timeA && timeB && timeA !== timeB) return timeA < timeB ? -1 : 1;
                     }
 
+                    // Otherwise preserve the user's original row order
                     return itemA.originalPosition - itemB.originalPosition;
                 });
 
