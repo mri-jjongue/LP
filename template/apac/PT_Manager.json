@@ -1,7 +1,7 @@
 [
   {
-    "sessionId": "686d9314-f88c-481b-86ab-2a85ba0948d3",
-    "templateNum": 8,
+    "sessionId": "4ee12648-bbdc-45c3-b3cd-aaabbad0790f",
+    "templateNum": 85,
     "config": {
       "prideName": "",
       "prideEmail": "",
@@ -17,7 +17,7 @@
     },
     "dataset": [
       {
-        "id": "44701085-6bfb-446c-98ee-c0b179655a07",
+        "id": "0ba7920b-b44b-4ce9-bd47-e672fec1c9cf",
         "title": "Agora: Hello and Agora Gateway - Introduction",
         "type": "Video",
         "instructor": "Self-led",
@@ -37,7 +37,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "adb12fa6-4577-4eb4-8091-05da2f62548f",
+        "id": "c94288e0-fc7d-480e-b44c-23e87f01db24",
         "title": "MRI Cloud Overview",
         "type": "Video",
         "instructor": "Self-led",
@@ -57,7 +57,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "111dccae-acee-4a02-9413-d464e5f57234",
+        "id": "c310d59d-a053-4fb2-9df2-48f18dda5629",
         "title": "Trust Accounting Fundamentals (Australia)",
         "type": "eLearning",
         "instructor": "Self-led",
@@ -77,7 +77,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "7bd5d6be-2088-4f52-a61c-8ed64603e8ec",
+        "id": "ae09c85a-9d0c-43f5-a3a6-f04916383ae8",
         "title": "Residential Property Management in ANZ: Understanding the Property Management Lifecycle",
         "type": "Live Session",
         "instructor": "James Elliott",
@@ -97,7 +97,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "a971d840-6236-4a51-8c53-5733f2d2b652",
+        "id": "e282232a-b023-4c67-b9a3-68b08398ba09",
         "title": "Feedback & Difficult Conversations",
         "type": "Video",
         "instructor": "Self-led",
@@ -117,7 +117,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "8042c6eb-3124-4aa0-b180-b5fea747a6ba",
+        "id": "2186fa53-556f-4346-8d23-5168bb149e0f",
         "title": "Handling Difficult Conversations",
         "type": "Video",
         "instructor": "Self-led",
@@ -137,7 +137,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "116a0dfb-4619-4388-8e7f-c671dd840cd6",
+        "id": "e9679c67-29cc-435f-a771-d19916766732",
         "title": "Residential Property Sales in ANZ: Understanding the Property Lifecycle",
         "type": "Live Session",
         "instructor": "James Elliott",
@@ -157,7 +157,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "88db6ead-075d-4853-a86f-b9c60b1131e2",
+        "id": "3c359330-6dfe-400c-879b-626304658c37",
         "title": "AWS Voice Agent Training - APAC",
         "type": "Video",
         "instructor": "Self-led",
@@ -177,7 +177,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "465d4597-51ae-49e7-8cea-6ff8e0ca7639",
+        "id": "b6f213e8-fdb4-4f51-9f2c-e3d2592a05e5",
         "title": "Global Collaboration - Working Cross-Culturally",
         "type": "Video",
         "instructor": "Self-led",
@@ -197,13 +197,13 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "391f0c24-6b77-45ab-90fe-10983c65922e",
-        "title": "Property Tree: Session 1 - Navigation eLearning",
-        "type": "eLearning",
+        "id": "cef1d69b-4eae-4a1f-9b94-8dc23df330ca",
+        "title": "Property Tree: Introduction",
+        "type": "Video",
         "instructor": "Self-led",
         "liveSessionDate": "",
         "startTime": "",
-        "duration": "1 hr",
+        "duration": "45 min",
         "dueDate": "",
         "eventStatus": "",
         "locatorNumber": "",
@@ -217,7 +217,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "0a9e5e39-7e5e-429c-8c5e-6358f6786514",
+        "id": "18fe5fa6-6e9d-4c0c-905f-a5c9333a58a4",
         "title": "Agora Insights: Introduction for Property Tree",
         "type": "Video",
         "instructor": "Self-led",
@@ -237,7 +237,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "953628e4-7918-4f4a-8c08-9d14f4829174",
+        "id": "a961bb58-233a-4aed-83a4-20a13b3012b7",
         "title": "Property Tree: Agora Gateway eLearning",
         "type": "eLearning",
         "instructor": "Self-led",
@@ -257,7 +257,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "292e7ade-3d04-4234-8bf2-0f09f03a2edd",
+        "id": "0e131538-d696-46d4-8830-b4a53ab4cee0",
         "title": "Support Process: Ticket Management (Zendesk)",
         "type": "Live Session",
         "instructor": "Joe Jongue",
@@ -277,7 +277,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "be7b083b-2625-415f-90ba-fd963869aa69",
+        "id": "24261670-4116-48e7-9b0a-02c1f0268cff",
         "title": "Salesforce for Global Services - Introduction",
         "type": "Video",
         "instructor": "Self-led",
@@ -297,7 +297,7 @@
         "outsideBusinessHours": false
       },
       {
-        "id": "328c28a9-1147-4e6e-a7ff-20ee049ec9c5",
+        "id": "c46afc82-95a5-4f1c-9d5b-ba52b74a4d74",
         "title": "Salesforce for Global Services - Managing Cases",
         "type": "Video",
         "instructor": "Self-led",
