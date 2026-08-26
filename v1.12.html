@@ -6778,7 +6778,7 @@
 
                 // Updated naming convention to reflect single-tab saving
                 downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", `LP_Tab_${activePrideName.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+                downloadAnchorNode.setAttribute("download", `LP_${activePrideName.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
